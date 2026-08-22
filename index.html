@@ -437,7 +437,7 @@ takeButton.addEventListener(
 );
 
 
-function tomarFoto(){
+async function tomarFoto(){
 
   try{
 
@@ -468,6 +468,20 @@ function tomarFoto(){
       );
 
     }
+
+
+    /*
+    ================================================
+     OBTENER GPS REAL DEL TELÉFONO
+    ================================================
+    */
+
+    status.textContent =
+      "Obteniendo ubicación GPS...";
+
+
+    const posicion =
+      await obtenerGPS();
 
 
     /*
@@ -513,17 +527,7 @@ function tomarFoto(){
 
     /*
     ================================================
-     GPS
-    ================================================
-    */
-
-    const posicion =
-      obtenerGPS();
-
-
-    /*
-    ================================================
-     DATOS
+     FECHA Y HORA
     ================================================
     */
 
@@ -532,11 +536,15 @@ function tomarFoto(){
 
 
     const fecha =
-      ahora.toLocaleDateString();
+      ahora.toLocaleDateString(
+        "es-MX"
+      );
 
 
     const hora =
-      ahora.toLocaleTimeString();
+      ahora.toLocaleTimeString(
+        "es-MX"
+      );
 
 
     /*
@@ -554,64 +562,163 @@ function tomarFoto(){
 
     const padding =
       Math.round(
-        25 * escala
+        16 * escala
       );
 
 
-    const fontGrande =
-      Math.round(
-        34 * escala
-      );
-
-
-    const fontMediano =
-      Math.round(
-        26 * escala
-      );
-
-
-    const fontPequeno =
-      Math.round(
-        22 * escala
+    const font =
+      Math.max(
+        16,
+        Math.round(
+          20 * escala
+        )
       );
 
 
     const altoLinea =
       Math.round(
-        35 * escala
-      );
-
-
-    const altoCaja =
-      Math.round(
-        250 * escala
+        27 * escala
       );
 
 
     /*
     ================================================
-     CAJA NEGRA
+     TEXTO DEL ESTAMPADO
+    ================================================
+    */
+
+    const lineas = [
+
+      "PROYECTO: " +
+        (
+          proyecto ||
+          "SIN PROYECTO"
+        ),
+
+      "TIPO PROYECTO: " +
+        (
+          tipoProyecto ||
+          "SIN TIPO"
+        ),
+
+      "TIPO FOTO: " +
+        obtenerNombreTipoFoto(tipo),
+
+      fecha +
+        "  " +
+        hora,
+
+      posicion
+
+        ? "LAT: " +
+          Number(
+            posicion.lat
+          ).toFixed(6) +
+          "  LON: " +
+          Number(
+            posicion.lng
+          ).toFixed(6)
+
+        : "GPS: SIN UBICACIÓN"
+
+    ];
+
+
+    /*
+    ================================================
+     MEDIR CAJA
+    ================================================
+    */
+
+    ctx.font =
+      "bold " +
+      font +
+      "px Arial";
+
+
+    let anchoTexto =
+      0;
+
+
+    lineas.forEach(
+      function(texto){
+
+        const medida =
+          ctx.measureText(
+            texto
+          ).width;
+
+
+        if(
+          medida >
+          anchoTexto
+        ){
+
+          anchoTexto =
+            medida;
+
+        }
+
+      }
+    );
+
+
+    const anchoCaja =
+      anchoTexto +
+      padding * 2;
+
+
+    const altoCaja =
+      lineas.length *
+        altoLinea +
+      padding * 2;
+
+
+    /*
+    ================================================
+     POSICIÓN
+    ================================================
+    */
+
+    const x =
+      padding;
+
+
+    const y =
+      height -
+      altoCaja -
+      padding;
+
+
+    /*
+    ================================================
+     CAJA SEMITRANSPARENTE
     ================================================
     */
 
     ctx.fillStyle =
-      "rgba(0,0,0,0.72)";
+      "rgba(0, 0, 0, 0.42)";
 
 
-    ctx.fillRect(
+    ctx.beginPath();
 
-      padding,
 
-      height -
-        altoCaja -
-        padding,
+    const radio =
+      Math.round(
+        10 * escala
+      );
 
-      width -
-        padding * 2,
 
-      altoCaja
-
+    ctx.roundRect(
+      x,
+      y,
+      anchoCaja,
+      altoCaja,
+      radio
     );
+
+
+    ctx.fill();
 
 
     /*
@@ -621,141 +728,37 @@ function tomarFoto(){
     */
 
     ctx.fillStyle =
-      "white";
+      "rgba(255,255,255,0.95)";
 
-
-    let y =
-      height -
-      altoCaja +
-      padding +
-      fontGrande;
-
-
-    /*
-    ================================================
-     PROYECTO
-    ================================================
-    */
 
     ctx.font =
       "bold " +
-      fontGrande +
+      font +
       "px Arial";
 
 
-    ctx.fillText(
-      proyecto || "SIN PROYECTO",
-      padding * 2,
-      y
+    ctx.textBaseline =
+      "top";
+
+
+    lineas.forEach(
+      function(texto, index){
+
+        ctx.fillText(
+
+          texto,
+
+          x + padding,
+
+          y +
+          padding +
+          index *
+          altoLinea
+
+        );
+
+      }
     );
-
-
-    y +=
-      altoLinea;
-
-
-    /*
-    ================================================
-     TIPO
-    ================================================
-    */
-
-    ctx.font =
-      "bold " +
-      fontMediano +
-      "px Arial";
-
-
-    ctx.fillText(
-      "TIPO: " +
-      (
-        tipoProyecto ||
-        stampText.value ||
-        "FIELD INSPECTION"
-      ),
-      padding * 2,
-      y
-    );
-
-
-    y +=
-      altoLinea;
-
-
-    /*
-    ================================================
-     FOTO
-    ================================================
-    */
-
-    ctx.fillText(
-      "FOTO: " +
-      obtenerNombreTipoFoto(tipo),
-      padding * 2,
-      y
-    );
-
-
-    y +=
-      altoLinea;
-
-
-    /*
-    ================================================
-     FECHA
-    ================================================
-    */
-
-    ctx.font =
-      fontPequeno +
-      "px Arial";
-
-
-    ctx.fillText(
-      fecha +
-      "  " +
-      hora,
-      padding * 2,
-      y
-    );
-
-
-    y +=
-      altoLinea;
-
-
-    /*
-    ================================================
-     GPS
-    ================================================
-    */
-
-    if(posicion){
-
-      ctx.fillText(
-        "LAT: " +
-        Number(
-          posicion.lat
-        ).toFixed(6) +
-        "  LON: " +
-        Number(
-          posicion.lng
-        ).toFixed(6),
-        padding * 2,
-        y
-      );
-
-    }
-
-    else{
-
-      ctx.fillText(
-        "GPS: SIN UBICACIÓN",
-        padding * 2,
-        y
-      );
-
-    }
 
 
     /*
@@ -787,7 +790,7 @@ function tomarFoto(){
 
     /*
     ================================================
-     DEVOLVER AL FORMULARIO
+     NOMBRE
     ================================================
     */
 
@@ -797,6 +800,12 @@ function tomarFoto(){
         ahora
       );
 
+
+    /*
+    ================================================
+     MENSAJE AL FORMULARIO
+    ================================================
+    */
 
     const mensaje = {
 
@@ -830,7 +839,7 @@ function tomarFoto(){
 
     /*
     ================================================
-     ENVIAR A LA VENTANA PADRE
+     ENVIAR AL FORMULARIO
     ================================================
     */
 
@@ -860,30 +869,38 @@ function tomarFoto(){
 
     /*
     ================================================
-     CERRAR
+     CERRAR CÁMARA
     ================================================
     */
 
     detenerCamara();
 
 
-    setTimeout(function(){
+    setTimeout(
+      function(){
 
-  if (window.opener && !window.opener.closed) {
+        if(
+          window.opener &&
+          !window.opener.closed
+        ){
 
-    window.opener.focus();
+          window.opener.focus();
 
-    window.close();
+          window.close();
 
-  } else {
+        }
+        else{
 
-    status.textContent =
-      "✅ FOTO CAPTURADA.\n\n" +
-      "Puedes regresar manualmente al formulario.";
+          status.textContent =
+            "✅ FOTO CAPTURADA.\n\n" +
+            "Puedes regresar manualmente al formulario.";
 
-  }
+        }
 
-}, 500);
+      },
+      500
+    );
+
   }
   catch(error){
 
@@ -901,7 +918,6 @@ function tomarFoto(){
 
 }
 
-
 /*
 ====================================================
  GPS
@@ -910,17 +926,84 @@ function tomarFoto(){
 
 function obtenerGPS(){
 
-  /*
-   * Esta función utiliza la última posición
-   * disponible de forma síncrona.
-   *
-   * El formulario conserva también su GPS.
-   */
+  return new Promise(
+    function(resolve){
 
-  return null;
+      if(
+        !navigator.geolocation
+      ){
+
+        console.warn(
+          "GPS NO DISPONIBLE"
+        );
+
+        resolve(null);
+
+        return;
+
+      }
+
+
+      navigator.geolocation.getCurrentPosition(
+
+        function(position){
+
+          const resultado = {
+
+            lat:
+              position.coords.latitude,
+
+            lng:
+              position.coords.longitude
+
+          };
+
+
+          console.log(
+            "GPS OBTENIDO:",
+            resultado
+          );
+
+
+          resolve(
+            resultado
+          );
+
+        },
+
+
+        function(error){
+
+          console.warn(
+            "NO SE PUDO OBTENER GPS:",
+            error
+          );
+
+
+          resolve(null);
+
+        },
+
+
+        {
+
+          enableHighAccuracy:
+            true,
+
+          timeout:
+            10000,
+
+          maximumAge:
+            0
+
+        }
+
+      );
+
+    }
+  );
 
 }
-
 
 /*
 ====================================================
