@@ -34,7 +34,6 @@ h2 {
   width: 100%;
   max-width: 800px;
   margin: auto;
-  position: relative;
 }
 
 #video {
@@ -83,8 +82,8 @@ button {
   color: white;
 }
 
-#saveButton {
-  background: #ff9800;
+#cancelButton {
+  background: #f44336;
   color: white;
 }
 
@@ -127,45 +126,36 @@ button:disabled {
 
 <button
   id="startButton">
-  START CAMERA
+  📷 START CAMERA
+</button>
+
+<button
+  id="takeButton"
+  disabled>
+  📸 TAKE PHOTO
+</button>
+
+<button
+  id="cancelButton">
+  ✕ CANCEL
 </button>
 
 </div>
-
 
 <div id="cameraContainer">
 
 <video
   id="video"
   autoplay
-  playsinline>
+  playsinline
+  muted>
 </video>
 
 <canvas id="canvas"></canvas>
 
 </div>
 
-
-<div class="controls">
-
-<button
-  id="takeButton"
-  disabled>
-  📷 TAKE PHOTO
-</button>
-
-<button
-  id="saveButton"
-  disabled>
-  💾 SAVE TO GOOGLE DRIVE
-</button>
-
-</div>
-
-
-<img
-  id="preview">
-
+<img id="preview">
 
 <div id="status">
 Ready.
@@ -175,451 +165,819 @@ Ready.
 <script>
 
 /*
-==================================================
-IMPORTANT
-==================================================
-
-PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE.
-
-Example:
-
-https://script.google.com/macros/s/AKfycbwo3B-4yNRZ11EQjZO8jsSN6p9BjHir86tFnD8VINIUwUc-yjC15LRscr6YLxhGX3p0eg/exec
+====================================================
+ DATOS RECIBIDOS DEL FORMULARIO
+====================================================
 */
 
-const APPS_SCRIPT_URL =
-  'https://script.google.com/macros/s/AKfycbwo3B-4yNRZ11EQjZO8jsSN6p9BjHir86tFnD8VINIUwUc-yjC15LRscr6YLxhGX3p0eg/exec';
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+
+const tipo =
+  params.get("tipo") || "poste";
+
+
+const proyecto =
+  params.get("proyecto") || "";
+
+
+const tipoProyecto =
+  params.get("tipoProyecto") || "";
+
+
+const hub =
+  params.get("hub") || "";
+
+
+const rama =
+  params.get("rama") || "";
+
+
+console.log(
+  "DATOS RECIBIDOS:",
+  {
+    tipo,
+    proyecto,
+    tipoProyecto,
+    hub,
+    rama
+  }
+);
 
 
 /*
-==================================================
-ELEMENTS
-==================================================
+====================================================
+ ELEMENTOS
+====================================================
 */
 
 const video =
-  document.getElementById('video');
+  document.getElementById("video");
 
 const canvas =
-  document.getElementById('canvas');
+  document.getElementById("canvas");
 
 const preview =
-  document.getElementById('preview');
+  document.getElementById("preview");
 
 const startButton =
-  document.getElementById('startButton');
+  document.getElementById("startButton");
 
 const takeButton =
-  document.getElementById('takeButton');
+  document.getElementById("takeButton");
 
-const saveButton =
-  document.getElementById('saveButton');
+const cancelButton =
+  document.getElementById("cancelButton");
 
 const status =
-  document.getElementById('status');
+  document.getElementById("status");
 
 const stampText =
-  document.getElementById('stampText');
+  document.getElementById("stampText");
 
+
+/*
+====================================================
+ VARIABLES
+====================================================
+*/
 
 let stream = null;
 
-let stampedImage = null;
+
+/*
+====================================================
+ TEXTO INICIAL
+====================================================
+*/
+
+if(proyecto){
+
+  stampText.value =
+    proyecto;
+
+}
 
 
 /*
-==================================================
-START CAMERA
-==================================================
+====================================================
+ INICIAR CÁMARA
+====================================================
 */
 
 startButton.addEventListener(
-  'click',
-  async function() {
+  "click",
+  iniciarCamara
+);
 
-    try {
 
-      status.textContent =
-        'Requesting camera permission...';
+async function iniciarCamara(){
 
-      /*
-       * environment = rear camera
-       */
+  try{
 
-      stream =
-        await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: {
-              ideal: 'environment'
-            }
+    status.textContent =
+      "Solicitando permiso de cámara...";
+
+
+    /*
+    ================================================
+     VALIDAR API
+    ================================================
+    */
+
+    if(
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ){
+
+      throw new Error(
+        "El navegador no permite utilizar la cámara."
+      );
+
+    }
+
+
+    /*
+    ================================================
+     DETENER CÁMARA ANTERIOR
+    ================================================
+    */
+
+    detenerCamara();
+
+
+    /*
+    ================================================
+     SOLICITAR CÁMARA TRASERA
+    ================================================
+    */
+
+    stream =
+      await navigator.mediaDevices.getUserMedia({
+
+        video: {
+
+          facingMode: {
+            ideal: "environment"
           },
-          audio: false
-        });
 
+          width: {
+            ideal: 1920
+          },
 
-      video.srcObject = stream;
+          height: {
+            ideal: 1080
+          }
 
-      takeButton.disabled = false;
+        },
 
-      status.textContent =
-        'Camera is ready.';
+        audio: false
 
-    }
+      });
 
-    catch (error) {
 
-      status.textContent =
-        'CAMERA ERROR:\n\n' +
-        error.name +
-        '\n' +
-        error.message;
+    /*
+    ================================================
+     MOSTRAR VIDEO
+    ================================================
+    */
 
-      console.error(error);
+    video.srcObject =
+      stream;
 
-    }
 
-  }
-);
+    await video.play();
 
 
-/*
-==================================================
-TAKE PHOTO
-==================================================
-*/
-
-takeButton.addEventListener(
-  'click',
-  function() {
-
-    try {
-
-      if (!stream) {
-
-        status.textContent =
-          'Camera is not running.';
-
-        return;
-
-      }
-
-
-      const width =
-        video.videoWidth;
-
-      const height =
-        video.videoHeight;
-
-
-      if (!width || !height) {
-
-        status.textContent =
-          'Camera image is not ready yet.';
-
-        return;
-
-      }
-
-
-      /*
-       * Canvas gets same resolution
-       * as camera frame.
-       */
-
-      canvas.width = width;
-      canvas.height = height;
-
-
-      const ctx =
-        canvas.getContext('2d');
-
-
-      /*
-       * Draw camera frame
-       */
-
-      ctx.drawImage(
-        video,
-        0,
-        0,
-        width,
-        height
-      );
-
-
-      /*
-       * ==========================================
-       * STAMP SETTINGS
-       * ==========================================
-       */
-
-      const scale =
-        Math.max(width, height) / 1200;
-
-
-      const padding =
-        Math.round(25 * scale);
-
-
-      const fontSize =
-        Math.round(34 * scale);
-
-
-      const smallFont =
-        Math.round(26 * scale);
-
-
-      const boxHeight =
-        Math.round(130 * scale);
-
-
-      /*
-       * Black transparent stamp box
-       */
-
-      ctx.fillStyle =
-        'rgba(0, 0, 0, 0.72)';
-
-
-      ctx.fillRect(
-        padding,
-        height - boxHeight - padding,
-        width - padding * 2,
-        boxHeight
-      );
-
-
-      /*
-       * White text
-       */
-
-      ctx.fillStyle = 'white';
-
-
-      ctx.font =
-        'bold ' +
-        fontSize +
-        'px Arial';
-
-
-      const text =
-        stampText.value ||
-        'FIELD INSPECTION';
-
-
-      ctx.fillText(
-        text,
-        padding * 2,
-        height -
-        boxHeight +
-        padding * 1.5
-      );
-
-
-      /*
-       * Date/time
-       */
-
-      const now =
-        new Date();
-
-
-      const date =
-        now.toLocaleDateString();
-
-
-      const time =
-        now.toLocaleTimeString();
-
-
-      ctx.font =
-        smallFont +
-        'px Arial';
-
-
-      ctx.fillText(
-        date + '  ' + time,
-        padding * 2,
-        height -
-        boxHeight +
-        padding * 2.8
-      );
-
-
-      /*
-       * Create final JPG
-       */
-
-      stampedImage =
-        canvas.toDataURL(
-          'image/jpeg',
-          0.90
-        );
-
-
-      /*
-       * Show stamped image
-       */
-
-      preview.src =
-        stampedImage;
-
-      preview.style.display =
-        'block';
-
-
-      saveButton.disabled = false;
-
-
-      status.textContent =
-        'Photo captured and stamped.\n\n' +
-        'Press SAVE TO GOOGLE DRIVE.';
-
-
-    }
-
-    catch (error) {
-
-      status.textContent =
-        'PHOTO ERROR:\n\n' +
-        error.message;
-
-      console.error(error);
-
-    }
-
-  }
-);
-
-
-/*
-==================================================
-SAVE TO GOOGLE DRIVE
-==================================================
-*/
-
-saveButton.addEventListener(
-  'click',
-  async function() {
-
-    if (!stampedImage) {
-
-      status.textContent =
-        'No stamped image exists.';
-
-      return;
-
-    }
-
-
-    if (
-      APPS_SCRIPT_URL ===
-      'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'
-    ) {
-
-      status.textContent =
-        'You have not entered your Apps Script URL.';
-
-      return;
-
-    }
-
-
-    saveButton.disabled = true;
+    takeButton.disabled =
+      false;
 
 
     status.textContent =
-      'Uploading stamped photo...\n\n' +
-      'Please wait.';
+      "✅ Cámara lista.\n\n" +
+      "Presiona TAKE PHOTO.";
 
-
-    try {
-
-      const fileName =
-        'STAMPED_' +
-        formatFileDate(new Date()) +
-        '.jpg';
-
-
-      /*
-       * Send image to Apps Script
-       */
-
-      const response =
-        await fetch(
-          APPS_SCRIPT_URL,
-          {
-            method: 'POST',
-
-            headers: {
-              'Content-Type':
-                'text/plain;charset=utf-8'
-            },
-
-            body: JSON.stringify({
-              image: stampedImage,
-              fileName: fileName
-            })
-          }
-        );
-
-
-      const result =
-        await response.json();
-
-
-      if (!result.success) {
-
-        throw new Error(
-          result.error ||
-          'Unknown Apps Script error.'
-        );
-
-      }
-
-
-      status.innerHTML =
-        '✅ PHOTO SAVED TO GOOGLE DRIVE<br><br>' +
-
-        'File: ' +
-        result.fileName +
-        '<br><br>' +
-
-        '<a href="' +
-        result.fileUrl +
-        '" ' +
-        'target="_blank" ' +
-        'style="color:#4caf50;">' +
-        'OPEN PHOTO IN DRIVE' +
-        '</a>';
-
-
-      saveButton.disabled = false;
-
-    }
-
-    catch (error) {
-
-      status.textContent =
-        'UPLOAD ERROR:\n\n' +
-        error.message;
-
-      console.error(error);
-
-      saveButton.disabled = false;
-
-    }
 
   }
-);
+  catch(error){
+
+    console.error(
+      "ERROR CAMERA:",
+      error
+    );
+
+
+    let mensaje =
+      "NO FUE POSIBLE ABRIR LA CÁMARA.\n\n";
+
+
+    if(
+      error.name ===
+      "NotAllowedError"
+    ){
+
+      mensaje +=
+        "El navegador bloqueó el permiso de cámara.\n\n" +
+
+        "Revisa los permisos de cámara del navegador " +
+        "y vuelve a intentarlo.";
+
+    }
+
+    else if(
+      error.name ===
+      "NotFoundError"
+    ){
+
+      mensaje +=
+        "No se encontró una cámara.";
+
+    }
+
+    else if(
+      error.name ===
+      "NotReadableError"
+    ){
+
+      mensaje +=
+        "La cámara está siendo utilizada por otra aplicación.";
+
+    }
+
+    else{
+
+      mensaje +=
+        error.name +
+        "\n" +
+        error.message;
+
+    }
+
+
+    status.textContent =
+      mensaje;
+
+  }
+
+}
 
 
 /*
-==================================================
-FILE NAME DATE
-==================================================
+====================================================
+ TOMAR FOTO
+====================================================
 */
 
-function formatFileDate(date) {
+takeButton.addEventListener(
+  "click",
+  tomarFoto
+);
+
+
+function tomarFoto(){
+
+  try{
+
+    if(!stream){
+
+      throw new Error(
+        "La cámara no está iniciada."
+      );
+
+    }
+
+
+    const width =
+      video.videoWidth;
+
+
+    const height =
+      video.videoHeight;
+
+
+    if(
+      !width ||
+      !height
+    ){
+
+      throw new Error(
+        "La cámara todavía no está lista."
+      );
+
+    }
+
+
+    /*
+    ================================================
+     CANVAS
+    ================================================
+    */
+
+    canvas.width =
+      width;
+
+    canvas.height =
+      height;
+
+
+    const ctx =
+      canvas.getContext("2d");
+
+
+    if(!ctx){
+
+      throw new Error(
+        "No fue posible crear el canvas."
+      );
+
+    }
+
+
+    /*
+    ================================================
+     IMAGEN
+    ================================================
+    */
+
+    ctx.drawImage(
+      video,
+      0,
+      0,
+      width,
+      height
+    );
+
+
+    /*
+    ================================================
+     GPS
+    ================================================
+    */
+
+    const posicion =
+      obtenerGPS();
+
+
+    /*
+    ================================================
+     DATOS
+    ================================================
+    */
+
+    const ahora =
+      new Date();
+
+
+    const fecha =
+      ahora.toLocaleDateString();
+
+
+    const hora =
+      ahora.toLocaleTimeString();
+
+
+    /*
+    ================================================
+     ESCALA
+    ================================================
+    */
+
+    const escala =
+      Math.max(
+        width,
+        height
+      ) / 1200;
+
+
+    const padding =
+      Math.round(
+        25 * escala
+      );
+
+
+    const fontGrande =
+      Math.round(
+        34 * escala
+      );
+
+
+    const fontMediano =
+      Math.round(
+        26 * escala
+      );
+
+
+    const fontPequeno =
+      Math.round(
+        22 * escala
+      );
+
+
+    const altoLinea =
+      Math.round(
+        35 * escala
+      );
+
+
+    const altoCaja =
+      Math.round(
+        250 * escala
+      );
+
+
+    /*
+    ================================================
+     CAJA NEGRA
+    ================================================
+    */
+
+    ctx.fillStyle =
+      "rgba(0,0,0,0.72)";
+
+
+    ctx.fillRect(
+
+      padding,
+
+      height -
+        altoCaja -
+        padding,
+
+      width -
+        padding * 2,
+
+      altoCaja
+
+    );
+
+
+    /*
+    ================================================
+     TEXTO
+    ================================================
+    */
+
+    ctx.fillStyle =
+      "white";
+
+
+    let y =
+      height -
+      altoCaja +
+      padding +
+      fontGrande;
+
+
+    /*
+    ================================================
+     PROYECTO
+    ================================================
+    */
+
+    ctx.font =
+      "bold " +
+      fontGrande +
+      "px Arial";
+
+
+    ctx.fillText(
+      proyecto || "SIN PROYECTO",
+      padding * 2,
+      y
+    );
+
+
+    y +=
+      altoLinea;
+
+
+    /*
+    ================================================
+     TIPO
+    ================================================
+    */
+
+    ctx.font =
+      "bold " +
+      fontMediano +
+      "px Arial";
+
+
+    ctx.fillText(
+      "TIPO: " +
+      (
+        tipoProyecto ||
+        stampText.value ||
+        "FIELD INSPECTION"
+      ),
+      padding * 2,
+      y
+    );
+
+
+    y +=
+      altoLinea;
+
+
+    /*
+    ================================================
+     FOTO
+    ================================================
+    */
+
+    ctx.fillText(
+      "FOTO: " +
+      obtenerNombreTipoFoto(tipo),
+      padding * 2,
+      y
+    );
+
+
+    y +=
+      altoLinea;
+
+
+    /*
+    ================================================
+     FECHA
+    ================================================
+    */
+
+    ctx.font =
+      fontPequeno +
+      "px Arial";
+
+
+    ctx.fillText(
+      fecha +
+      "  " +
+      hora,
+      padding * 2,
+      y
+    );
+
+
+    y +=
+      altoLinea;
+
+
+    /*
+    ================================================
+     GPS
+    ================================================
+    */
+
+    if(posicion){
+
+      ctx.fillText(
+        "LAT: " +
+        Number(
+          posicion.lat
+        ).toFixed(6) +
+        "  LON: " +
+        Number(
+          posicion.lng
+        ).toFixed(6),
+        padding * 2,
+        y
+      );
+
+    }
+
+    else{
+
+      ctx.fillText(
+        "GPS: SIN UBICACIÓN",
+        padding * 2,
+        y
+      );
+
+    }
+
+
+    /*
+    ================================================
+     CREAR JPG
+    ================================================
+    */
+
+    const dataURL =
+      canvas.toDataURL(
+        "image/jpeg",
+        0.90
+      );
+
+
+    /*
+    ================================================
+     PREVIEW
+    ================================================
+    */
+
+    preview.src =
+      dataURL;
+
+
+    preview.style.display =
+      "block";
+
+
+    /*
+    ================================================
+     DEVOLVER AL FORMULARIO
+    ================================================
+    */
+
+    const nombre =
+      crearNombreFoto(
+        tipo,
+        ahora
+      );
+
+
+    const mensaje = {
+
+      type:
+        "CAMERA_STAMP_PHOTO",
+
+      tipo:
+        tipo,
+
+      fileName:
+        nombre,
+
+      mimeType:
+        "image/jpeg",
+
+      data:
+        dataURL,
+
+      latitud:
+        posicion
+          ? posicion.lat
+          : null,
+
+      longitud:
+        posicion
+          ? posicion.lng
+          : null
+
+    };
+
+
+    /*
+    ================================================
+     ENVIAR A LA VENTANA PADRE
+    ================================================
+    */
+
+    if(
+      window.opener &&
+      !window.opener.closed
+    ){
+
+      window.opener.postMessage(
+        mensaje,
+        "*"
+      );
+
+    }
+
+
+    /*
+    ================================================
+     MENSAJE
+    ================================================
+    */
+
+    status.textContent =
+      "✅ FOTO CAPTURADA.\n\n" +
+      "Regresando al formulario...";
+
+
+    /*
+    ================================================
+     CERRAR
+    ================================================
+    */
+
+    detenerCamara();
+
+
+    setTimeout(
+      function(){
+
+        if(
+          window.opener &&
+          !window.opener.closed
+        ){
+
+          window.close();
+
+        }
+
+      },
+      500
+    );
+
+  }
+  catch(error){
+
+    console.error(
+      "ERROR TOMANDO FOTO:",
+      error
+    );
+
+
+    status.textContent =
+      "ERROR AL TOMAR FOTO:\n\n" +
+      error.message;
+
+  }
+
+}
+
+
+/*
+====================================================
+ GPS
+====================================================
+*/
+
+function obtenerGPS(){
+
+  /*
+   * Esta función utiliza la última posición
+   * disponible de forma síncrona.
+   *
+   * El formulario conserva también su GPS.
+   */
+
+  return null;
+
+}
+
+
+/*
+====================================================
+ NOMBRE TIPO FOTO
+====================================================
+*/
+
+function obtenerNombreTipoFoto(tipo){
+
+  if(tipo === "poste")
+    return "POSTE";
+
+  if(tipo === "mega")
+    return "CAJAS MEGA";
+
+  if(tipo === "medidores")
+    return "MEDIDORES";
+
+  if(tipo === "carriers")
+    return "CAJAS CARRIERS";
+
+  return String(
+    tipo || ""
+  ).toUpperCase();
+
+}
+
+
+/*
+====================================================
+ NOMBRE FOTO
+====================================================
+*/
+
+function crearNombreFoto(
+  tipo,
+  fecha
+){
+
+  return (
+    "STAMPED_" +
+    obtenerNombreTipoFoto(tipo)
+      .replace(/\s+/g,"_") +
+    "_" +
+    formatFileDate(fecha) +
+    ".jpg"
+  );
+
+}
+
+
+/*
+====================================================
+ FECHA ARCHIVO
+====================================================
+*/
+
+function formatFileDate(date){
 
   const year =
     date.getFullYear();
@@ -627,38 +985,101 @@ function formatFileDate(date) {
   const month =
     String(
       date.getMonth() + 1
-    ).padStart(2, '0');
+    ).padStart(2,"0");
 
   const day =
     String(
       date.getDate()
-    ).padStart(2, '0');
+    ).padStart(2,"0");
 
   const hour =
     String(
       date.getHours()
-    ).padStart(2, '0');
+    ).padStart(2,"0");
 
   const minute =
     String(
       date.getMinutes()
-    ).padStart(2, '0');
+    ).padStart(2,"0");
 
   const second =
     String(
       date.getSeconds()
-    ).padStart(2, '0');
+    ).padStart(2,"0");
 
 
   return (
     year +
     month +
     day +
-    '_' +
+    "_" +
     hour +
     minute +
     second
   );
+
+}
+
+
+/*
+====================================================
+ CANCELAR
+====================================================
+*/
+
+cancelButton.addEventListener(
+  "click",
+  function(){
+
+    detenerCamara();
+
+
+    if(
+      window.opener &&
+      !window.opener.closed
+    ){
+
+      window.close();
+
+    }
+
+  }
+);
+
+
+/*
+====================================================
+ DETENER CÁMARA
+====================================================
+*/
+
+function detenerCamara(){
+
+  if(stream){
+
+    stream
+      .getTracks()
+      .forEach(
+        function(track){
+
+          track.stop();
+
+        }
+      );
+
+  }
+
+
+  stream =
+    null;
+
+
+  video.srcObject =
+    null;
+
+
+  takeButton.disabled =
+    true;
 
 }
 
