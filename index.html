@@ -114,52 +114,42 @@ button:disabled {
 
 <body>
 
-<h2>📷 Camera Stamp</h2>
-
-<div class="controls">
-
-<input
-  id="stampText"
-  type="text"
-  value="FIELD INSPECTION"
-  placeholder="Text to stamp on photo">
-
-<button
-  id="startButton">
-  📷 START CAMERA
-</button>
-
-<button
-  id="takeButton"
-  disabled>
-  📸 TAKE PHOTO
-</button>
-
-<button
-  id="cancelButton">
-  ✕ CANCEL
-</button>
-
-</div>
-
 <div id="cameraContainer">
 
-<video
-  id="video"
-  autoplay
-  playsinline
-  muted>
-</video>
+  <video
+    id="video"
+    autoplay
+    playsinline
+    muted>
+  </video>
 
-<canvas id="canvas"></canvas>
+  <canvas id="canvas"></canvas>
+
+  <div id="cameraControls">
+
+    <button
+      id="startButton">
+      📷 START CAMERA
+    </button>
+
+    <button
+      id="takeButton"
+      disabled>
+      📸 TAKE PHOTO
+    </button>
+
+    <button
+      id="cancelButton">
+      ✕ CANCEL
+    </button>
+
+  </div>
 
 </div>
 
 <img id="preview">
 
-<div id="status">
-Ready.
-</div>
+<div id="status"></div>
 
 
 <script>
