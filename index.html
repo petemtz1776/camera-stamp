@@ -31,74 +31,216 @@ h2 {
 }
 
 #cameraContainer {
-  width: 100%;
-  max-width: 800px;
-  margin: auto;
+
+  width:100%;
+
+  max-width:800px;
+
+  margin:auto;
+
+  position:relative;
+
+  background:#000;
+
+  border-radius:10px;
+
+  overflow:hidden;
+
 }
+
 
 #video {
-  width: 100%;
-  display: block;
-  background: black;
-  border-radius: 10px;
+
+  width:100%;
+
+  display:block;
+
+  background:#000;
+
 }
+
 
 #canvas {
-  display: none;
+
+  display:none;
+
 }
 
-.controls {
-  max-width: 800px;
-  margin: 15px auto;
+
+/*==================================================
+ BOTONES DENTRO DE LA CÁMARA
+==================================================*/
+
+#cameraControls {
+
+  position:absolute;
+
+  left:0;
+
+  right:0;
+
+  bottom:0;
+
+  display:flex;
+
+  gap:10px;
+
+  padding:12px;
+
+  background:linear-gradient(
+    transparent,
+    rgba(0,0,0,.75)
+  );
+
+  z-index:10;
+
 }
 
-input {
-  width: 100%;
-  padding: 14px;
-  font-size: 18px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  border: none;
+
+#cameraControls button {
+
+  flex:1;
+
+  min-height:52px;
+
+  padding:12px;
+
+  font-size:16px;
+
+  font-weight:bold;
+
+  border:none;
+
+  border-radius:8px;
+
+  cursor:pointer;
+
 }
 
-button {
-  width: 100%;
-  padding: 16px;
-  margin-top: 8px;
-  font-size: 20px;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
 
 #startButton {
-  background: #2196f3;
-  color: white;
+
+  background:#2196f3;
+
+  color:white;
+
 }
+
 
 #takeButton {
-  background: #4caf50;
-  color: white;
+
+  background:#4caf50;
+
+  color:white;
+
 }
+
 
 #cancelButton {
-  background: #f44336;
-  color: white;
+
+  background:#f44336;
+
+  color:white;
+
 }
 
-button:disabled {
-  opacity: 0.4;
+
+#cameraControls button:disabled {
+
+  opacity:.4;
+
 }
+
 
 #preview {
-  width: 100%;
-  max-width: 800px;
-  display: none;
-  margin: 15px auto;
-  border-radius: 8px;
+
+  width:100%;
+
+  max-width:800px;
+
+  display:none;
+
+  margin:15px auto;
+
+  border-radius:8px;
+
 }
 
+
+/*==================================================
+ MENSAJE OCULTO
+==================================================*/
+
+#status {
+
+  display:none;
+
+}
+
+
+/*==================================================
+ CELULAR
+==================================================*/
+
+@media(max-width:600px){
+
+  body {
+
+    padding:0;
+
+    background:#000;
+
+  }
+
+
+  #cameraContainer {
+
+    width:100vw;
+
+    height:100vh;
+
+    max-width:none;
+
+    border-radius:0;
+
+  }
+
+
+  #video {
+
+    width:100vw;
+
+    height:100vh;
+
+    object-fit:cover;
+
+  }
+
+
+  #cameraControls {
+
+    padding:
+
+      12px
+
+      10px
+
+      calc(12px + env(safe-area-inset-bottom));
+
+    gap:8px;
+
+  }
+
+
+  #cameraControls button {
+
+    min-height:52px;
+
+    font-size:15px;
+
+  }
+
+}
 #status {
   max-width: 800px;
   margin: 15px auto;
