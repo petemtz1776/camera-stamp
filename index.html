@@ -367,8 +367,7 @@ const cancelButton =
 const status =
   document.getElementById("status");
 
-const stampText =
-  document.getElementById("stampText");
+
 
 
 /*
@@ -381,17 +380,7 @@ let stream = null;
 
 
 /*
-====================================================
- TEXTO INICIAL
-====================================================
-*/
 
-if(proyecto){
-
-  stampText.value =
-    proyecto;
-
-}
 
 
 /*
@@ -551,7 +540,13 @@ async function iniciarCamara(){
 
     status.textContent =
       mensaje;
+ startButton.style.display =
+    "block";
 
+
+  takeButton.disabled =
+    true;
+    
   }
 
 }
