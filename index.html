@@ -473,8 +473,11 @@ async function iniciarCamara(){
     await video.play();
 
 
-    takeButton.disabled =
-      false;
+    startButton.style.display =
+  "none";
+
+takeButton.disabled =
+  false;
 
 
     status.textContent =
@@ -1294,6 +1297,36 @@ function detenerCamara(){
 
 }
 
+/*====================================================
+ INICIAR CÁMARA AUTOMÁTICAMENTE
+====================================================*/
+
+window.addEventListener(
+  "load",
+  function(){
+
+    console.log(
+      "INTENTANDO INICIAR CÁMARA AUTOMÁTICAMENTE..."
+    );
+
+
+    /*
+     * Ocultar START mientras intentamos
+     */
+
+    startButton.style.display =
+      "none";
+
+
+    /*
+     * Intentar iniciar cámara
+     */
+
+    iniciarCamara();
+
+  }
+);
+  
 </script>
 
 </body>
