@@ -13,129 +13,179 @@
 
 <style>
 
-* {
+*{
   box-sizing:border-box;
 }
 
-body {
+html,
+body{
   margin:0;
-  padding:15px;
-  background:#111;
-  color:white;
+  padding:0;
+  width:100%;
+  height:100%;
+  background:#000;
+  color:#fff;
   font-family:Arial,sans-serif;
 }
 
-#cameraContainer {
+body{
+  overflow:hidden;
+}
+
+
+/*====================================================
+ CONTENEDOR
+====================================================*/
+
+#cameraContainer{
 
   width:100%;
+
   max-width:800px;
+
+  height:100vh;
+
   margin:auto;
+
   position:relative;
+
   background:#000;
-  border-radius:10px;
+
   overflow:hidden;
 
 }
 
-#video {
+
+/*====================================================
+ VIDEO
+====================================================*/
+
+#video{
 
   width:100%;
+
+  height:100%;
+
   display:block;
+
   background:#000;
+
+  object-fit:cover;
 
 }
 
-#canvas {
+
+/*====================================================
+ CANVAS OCULTO
+====================================================*/
+
+#canvas{
+
   display:none;
+
 }
 
 
-/*==================================================
- VISOR DE FLECHA
-==================================================*/
+/*====================================================
+ VISOR DE SEÑALAMIENTO
+====================================================*/
 
-#arrowEditor {
+#arrowEditor{
 
   display:none;
-  position:relative;
-  width:100%;
-  background:#000;
-
-}
-
-#arrowCanvas {
-
-  width:100%;
-  display:block;
-  background:#000;
-  cursor:crosshair;
-  touch-action:none;
-
-}
-
-
-/*==================================================
- LOGO
-==================================================*/
-
-#logoPreload {
-
-  position:absolute;
-  width:1px;
-  height:1px;
-  opacity:0;
-  pointer-events:none;
-
-}
-
-
-/*==================================================
- BOTONES
-==================================================*/
-
-#cameraControls {
 
   position:absolute;
 
-  left:0;
-  right:0;
-  bottom:0;
+  inset:0;
 
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  width:100%;
 
-  gap:6px;
+  height:100%;
 
-  padding:
-    8px
-    8px
-    calc(8px + env(safe-area-inset-bottom));
-
-  background:
-    linear-gradient(
-      transparent,
-      rgba(0,0,0,.85)
-    );
+  background:#000;
 
   z-index:20;
 
 }
 
 
-#cameraControls button {
+#arrowCanvas{
+
+  width:100%;
+
+  height:100%;
+
+  display:block;
+
+  background:#000;
+
+  touch-action:none;
+
+  cursor:crosshair;
+
+}
+
+
+/*====================================================
+ BOTONES
+====================================================*/
+
+#cameraControls{
+
+  position:absolute;
+
+  left:0;
+
+  right:0;
+
+  bottom:0;
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  gap:5px;
+
+  padding:
+
+    8px
+
+    6px
+
+    calc(8px + env(safe-area-inset-bottom));
+
+  background:
+
+    linear-gradient(
+
+      transparent,
+
+      rgba(0,0,0,.85)
+
+    );
+
+  z-index:100;
+
+}
+
+
+#cameraControls button{
 
   flex:0 1 auto;
 
-  min-height:42px;
+  width:auto;
 
   min-width:0;
 
-  width:auto;
+  min-height:40px;
 
   padding:
+
     8px
-    10px;
+
+    9px;
 
   font-size:12px;
 
@@ -152,19 +202,34 @@ body {
 }
 
 
-#startButton {
+#startButton{
+
   background:#2196f3;
-  color:white;
+
+  color:#fff;
+
 }
 
 
-#signalButton {
+#takeButton{
+
+  background:#4caf50;
+
+  color:#fff;
+
+}
+
+
+#signalButton{
+
   background:#ff9800;
-  color:white;
+
+  color:#fff;
+
 }
 
 
-#signalButton.active {
+#signalButton.active{
 
   background:#e65100;
 
@@ -175,149 +240,161 @@ body {
 }
 
 
-#takeButton {
+#confirmButton{
+
   background:#4caf50;
-  color:white;
-}
 
+  color:#fff;
 
-#confirmButton {
-  background:#4caf50;
-  color:white;
   display:none;
+
 }
 
 
-#cancelSignalButton {
+#cancelSignalButton{
+
   background:#f44336;
-  color:white;
+
+  color:#fff;
+
   display:none;
+
 }
 
 
-#cancelButton {
+#cancelButton{
+
   background:#f44336;
-  color:white;
+
+  color:#fff;
+
 }
 
 
-#cameraControls button:disabled {
+#cameraControls button:disabled{
+
   opacity:.4;
+
 }
 
 
-/*==================================================
+/*====================================================
  PREVIEW
-==================================================*/
+====================================================*/
 
-#preview {
+#preview{
 
   width:100%;
+
   max-width:800px;
+
   display:none;
-  margin:15px auto;
-  border-radius:8px;
+
+  margin:auto;
 
 }
 
 
-/*==================================================
+/*====================================================
  STATUS
-==================================================*/
+====================================================*/
 
-#status {
+#status{
+
   display:none;
+
 }
 
 
-/*==================================================
+/*====================================================
  CELULAR
-==================================================*/
+====================================================*/
 
 @media(max-width:600px){
 
-  body {
-
-    padding:0;
-    background:#000;
-
-  }
-
-
-  #cameraContainer {
+  #cameraContainer{
 
     width:100vw;
+
     height:100vh;
+
     max-width:none;
-    border-radius:0;
 
   }
 
 
-  #video {
+  #video{
 
     width:100vw;
+
     height:100vh;
+
     object-fit:cover;
 
   }
 
 
-  #arrowEditor {
+  #arrowEditor{
 
     width:100vw;
+
     height:100vh;
 
   }
 
 
-  #arrowCanvas {
+  #arrowCanvas{
 
     width:100vw;
+
     height:100vh;
-    object-fit:contain;
 
   }
 
 
-  #cameraControls {
+  #cameraControls{
 
-    gap:5px;
+    gap:4px;
 
     padding:
+
       7px
-      5px
-      calc(
-        7px +
-        env(safe-area-inset-bottom)
-      );
+
+      4px
+
+      calc(7px + env(safe-area-inset-bottom));
 
   }
 
 
-  #cameraControls button {
+  #cameraControls button{
 
     min-height:38px;
 
     padding:
+
       7px
-      8px;
+
+      7px;
 
     font-size:11px;
+
+    border-radius:6px;
 
   }
 
 }
 
-
 </style>
 
 </head>
+
 
 <body>
 
 
 <div id="cameraContainer">
+
 
   <video
     id="video"
@@ -341,6 +418,7 @@ body {
 
   <div id="cameraControls">
 
+
     <button
       id="startButton">
       📷 START
@@ -348,8 +426,7 @@ body {
 
 
     <button
-      id="signalButton"
-      style="display:none;">
+      id="signalButton">
       🎯 SEÑALAR
     </button>
 
@@ -378,19 +455,13 @@ body {
       ✕ SALIR
     </button>
 
+
   </div>
 
 </div>
 
 
-<img
-  id="preview">
-
-
-<img
-  id="logoPreload"
-  crossorigin="anonymous"
-  alt="">
+<img id="preview">
 
 
 <div id="status"></div>
@@ -398,11 +469,9 @@ body {
 
 <script>
 
-/*
-====================================================
+/*====================================================
  DATOS DEL FORMULARIO
-====================================================
-*/
+====================================================*/
 
 const params =
   new URLSearchParams(
@@ -430,81 +499,66 @@ const rama =
   params.get("rama") || "";
 
 
-/*
-====================================================
+/*====================================================
  LOGO
-====================================================
-*/
+====================================================*/
 
 /*
- * ID DEL ARCHIVO DE GOOGLE DRIVE
+ * GOOGLE DRIVE
+ *
+ * Este es el archivo que proporcionaste.
  */
 
-const LOGO_ID =
+const LOGO_DRIVE_ID =
   "12EpwDn_A9mR0DfZSiGoTi2NS9zFNYPVP";
 
 
-/*
- * URL DIRECTA
- */
-
 const LOGO_URL =
   "https://lh3.googleusercontent.com/d/" +
-  LOGO_ID;
+  LOGO_DRIVE_ID;
 
 
 /*
-====================================================
+ * Si Google cambia el formato del enlace,
+ * esta función intenta cargarlo también
+ * mediante el enlace uc.
+ */
+
+const LOGO_URL_ALTERNATIVO =
+  "https://drive.google.com/uc?export=view&id=" +
+  LOGO_DRIVE_ID;
+
+
+/*====================================================
  ELEMENTOS
-====================================================
-*/
+====================================================*/
 
 const video =
-  document.getElementById(
-    "video"
-  );
+  document.getElementById("video");
 
 
 const canvas =
-  document.getElementById(
-    "canvas"
-  );
+  document.getElementById("canvas");
 
 
 const preview =
-  document.getElementById(
-    "preview"
-  );
-
-
-const logoPreload =
-  document.getElementById(
-    "logoPreload"
-  );
+  document.getElementById("preview");
 
 
 const startButton =
-  document.getElementById(
-    "startButton"
-  );
+  document.getElementById("startButton");
 
 
 const signalButton =
-  document.getElementById(
-    "signalButton"
-  );
+  document.getElementById("signalButton");
 
 
 const takeButton =
-  document.getElementById(
-    "takeButton"
-  );
+  document.getElementById("takeButton");
 
 
 const confirmButton =
-  document.getElementById(
-    "confirmButton"
-  );
+  document.getElementById("confirmButton");
 
 
 const cancelSignalButton =
@@ -514,15 +568,11 @@ const cancelSignalButton =
 
 
 const cancelButton =
-  document.getElementById(
-    "cancelButton"
-  );
+  document.getElementById("cancelButton");
 
 
 const status =
-  document.getElementById(
-    "status"
-  );
+  document.getElementById("status");
 
 
 const arrowEditor =
@@ -537,121 +587,122 @@ const arrowCanvas =
   );
 
 
-/*
-====================================================
+/*====================================================
  VARIABLES
-====================================================
-*/
+====================================================*/
 
 let stream = null;
 
-let logoCargado = false;
+
+/*
+ * Modo señalar
+ */
 
 let modoSenalar = false;
 
-let colocandoFlecha = false;
+
+/*
+ * Foto base
+ */
 
 let fotoBase = null;
 
+
+/*
+ * GPS
+ */
+
 let gpsActual = null;
+
+
+/*
+ * Fecha de fotografía
+ */
+
+let fechaFoto = null;
+
+
+/*
+ * Imagen del logo
+ */
+
+let logoImagen = null;
+
+
+/*
+ * Indica si el logo está listo
+ */
+
+let logoListo = false;
+
+
+/*
+ * Zona bloqueada del logo
+ */
+
+let zonaLogo = null;
+
+
+/*
+ * Zona bloqueada del estampado
+ */
+
+let zonaEstampado = null;
+
+
+/*====================================================
+ VARIABLES DE FLECHA
+====================================================*/
 
 let flechaX = null;
 
 let flechaY = null;
 
+
+/*
+ * Ángulo en radianes
+ */
+
 let flechaAngulo = 0;
+
+
+/*
+ * Tamaño
+ */
 
 let flechaEscala = 1;
 
-let arrastrandoFlecha = false;
+
+/*
+ * Estado de toque
+ */
+
+let gestoActivo = false;
+
+
+/*
+ * Datos del gesto
+ */
+
+let toqueInicial = null;
+
+
+/*
+ * Para distinguir click de touch
+ */
 
 let ultimoToque = 0;
 
 
-/*
-====================================================
- CARGAR LOGO
-====================================================
-*/
-
-function cargarLogo(){
-
-  return new Promise(
-    function(resolve){
-
-      logoCargado = false;
-
-
-      logoPreload.onload =
-        function(){
-
-          logoCargado = true;
-
-          console.log(
-            "LOGO CARGADO CORRECTAMENTE"
-          );
-
-          resolve(true);
-
-        };
-
-
-      logoPreload.onerror =
-        function(){
-
-          logoCargado = false;
-
-          console.error(
-            "NO SE PUDO CARGAR EL LOGO"
-          );
-
-          resolve(false);
-
-        };
-
-
-      logoPreload.src =
-        LOGO_URL +
-        "?t=" +
-        Date.now();
-
-    }
-  );
-
-}
-
-
-/*
-====================================================
- INICIAR
-====================================================
-*/
-
-async function prepararSistema(){
-
-  status.textContent =
-    "Cargando logo...";
-
-
-  await cargarLogo();
-
-
-  iniciarCamara();
-
-}
-
+/*====================================================
+ INICIAR CÁMARA
+====================================================*/
 
 startButton.addEventListener(
   "click",
-  prepararSistema
+  iniciarCamara
 );
 
-
-/*
-====================================================
- INICIAR CÁMARA
-====================================================
-*/
 
 async function iniciarCamara(){
 
@@ -719,20 +770,17 @@ async function iniciarCamara(){
       false;
 
 
-    if(logoCargado){
+    /*
+     * Cargar logo inmediatamente
+     */
 
-      status.textContent =
-        "✅ Cámara lista.\n\n" +
-        "Logo cargado.\n\n" +
-        "Puedes tomar la foto.";
+    cargarLogo();
 
-    }
-    else{
 
-      status.textContent =
-        "⚠️ Cámara lista, pero el logo no pudo cargarse.";
-
-    }
+    status.textContent =
+      "✅ CÁMARA LISTA.\n\n" +
+      "Puedes tomar la foto directamente " +
+      "o activar SEÑALAR.";
 
   }
   catch(error){
@@ -762,11 +810,113 @@ async function iniciarCamara(){
 }
 
 
-/*
-====================================================
+/*====================================================
+ CARGAR LOGO
+====================================================*/
+
+function cargarLogo(){
+
+  logoListo =
+    false;
+
+
+  logoImagen =
+    new Image();
+
+
+  /*
+   * Permitir cargar imagen externa
+   */
+
+  logoImagen.crossOrigin =
+    "anonymous";
+
+
+  logoImagen.onload =
+    function(){
+
+      logoListo =
+        true;
+
+
+      console.log(
+        "LOGO CARGADO:",
+        logoImagen.width,
+        logoImagen.height
+      );
+
+
+      status.textContent =
+        "✅ Cámara y logo listos.";
+
+    };
+
+
+  logoImagen.onerror =
+    function(){
+
+      console.warn(
+        "No se pudo cargar logo principal."
+      );
+
+
+      /*
+       * Segundo intento
+       */
+
+      const alternativa =
+        new Image();
+
+
+      alternativa.crossOrigin =
+        "anonymous";
+
+
+      alternativa.onload =
+        function(){
+
+          logoImagen =
+            alternativa;
+
+          logoListo =
+            true;
+
+
+          console.log(
+            "LOGO CARGADO CON URL ALTERNATIVA"
+          );
+
+        };
+
+
+      alternativa.onerror =
+        function(){
+
+          logoListo =
+            false;
+
+          console.error(
+            "NO SE PUDO CARGAR EL LOGO."
+          );
+
+        };
+
+
+      alternativa.src =
+        LOGO_URL_ALTERNATIVO;
+
+    };
+
+
+  logoImagen.src =
+    LOGO_URL;
+
+}
+
+
+/*====================================================
  BOTÓN SEÑALAR
-====================================================
-*/
+====================================================*/
 
 signalButton.addEventListener(
   "click",
@@ -802,11 +952,9 @@ signalButton.addEventListener(
 );
 
 
-/*
-====================================================
+/*====================================================
  DESACTIVAR SEÑALAR
-====================================================
-*/
+====================================================*/
 
 function desactivarSenalar(){
 
@@ -825,11 +973,9 @@ function desactivarSenalar(){
 }
 
 
-/*
-====================================================
+/*====================================================
  TOMAR FOTO
-====================================================
-*/
+====================================================*/
 
 takeButton.addEventListener(
   "click",
@@ -846,35 +992,6 @@ async function tomarFoto(){
       throw new Error(
         "La cámara no está iniciada."
       );
-
-    }
-
-
-    /*
-     * VERIFICAR LOGO
-     */
-
-    if(!logoCargado){
-
-      status.textContent =
-        "Esperando a que cargue el logo...";
-
-
-      const cargado =
-        await cargarLogo();
-
-
-      if(!cargado){
-
-        alert(
-          "No se pudo cargar el logo.\n\n" +
-          "Verifica que el archivo de Google Drive " +
-          "esté compartido como 'Cualquier persona con el enlace'."
-        );
-
-        return;
-
-      }
 
     }
 
@@ -900,10 +1017,8 @@ async function tomarFoto(){
 
 
     /*
-    ================================================
-     GPS
-    ================================================
-    */
+     * GPS
+     */
 
     status.textContent =
       "Obteniendo ubicación GPS...";
@@ -918,10 +1033,8 @@ async function tomarFoto(){
 
 
     /*
-    ================================================
-     CANVAS
-    ================================================
-    */
+     * Canvas
+     */
 
     canvas.width =
       width;
@@ -945,13 +1058,15 @@ async function tomarFoto(){
 
 
     /*
-    ================================================
-     FECHA
-    ================================================
-    */
+     * Fecha
+     */
 
     const ahora =
       new Date();
+
+
+    fechaFoto =
+      ahora;
 
 
     const fecha =
@@ -967,10 +1082,8 @@ async function tomarFoto(){
 
 
     /*
-    ================================================
-     ESCALA
-    ================================================
-    */
+     * Escala
+     */
 
     const escala =
       Math.max(
@@ -1001,10 +1114,8 @@ async function tomarFoto(){
 
 
     /*
-    ================================================
-     TEXTO
-    ================================================
-    */
+     * Texto
+     */
 
     const lineas = [
 
@@ -1033,7 +1144,9 @@ async function tomarFoto(){
           Number(
             posicion.lat
           ).toFixed(6) +
+
           "  LON: " +
+
           Number(
             posicion.lng
           ).toFixed(6)
@@ -1044,10 +1157,8 @@ async function tomarFoto(){
 
 
     /*
-    ================================================
-     MEDIR ESTAMPADO
-    ================================================
-    */
+     * Medir estampado
+     */
 
     ctx.font =
       "bold " +
@@ -1055,7 +1166,8 @@ async function tomarFoto(){
       "px Arial";
 
 
-    let anchoTexto = 0;
+    let anchoTexto =
+      0;
 
 
     lineas.forEach(
@@ -1067,11 +1179,15 @@ async function tomarFoto(){
           ).width;
 
 
-        anchoTexto =
-          Math.max(
-            anchoTexto,
-            medida
-          );
+        if(
+          medida >
+          anchoTexto
+        ){
+
+          anchoTexto =
+            medida;
+
+        }
 
       }
     );
@@ -1084,7 +1200,7 @@ async function tomarFoto(){
 
     const altoCaja =
       lineas.length *
-      altoLinea +
+        altoLinea +
       padding * 2;
 
 
@@ -1099,10 +1215,45 @@ async function tomarFoto(){
 
 
     /*
-    ================================================
-     ESTAMPADO
-    ================================================
-    */
+     * Guardar zona del estampado
+     *
+     * Se agrega margen para que la flecha
+     * tampoco pueda rozarlo.
+     */
+
+    const margenEstampado =
+      Math.max(
+        15,
+        Math.round(
+          18 * escala
+        )
+      );
+
+
+    zonaEstampado = {
+
+      x:
+        x -
+        margenEstampado,
+
+      y:
+        y -
+        margenEstampado,
+
+      width:
+        anchoCaja +
+        margenEstampado * 2,
+
+      height:
+        altoCaja +
+        margenEstampado * 2
+
+    };
+
+
+    /*
+     * Caja negra
+     */
 
     ctx.fillStyle =
       "rgba(0,0,0,.42)";
@@ -1111,17 +1262,27 @@ async function tomarFoto(){
     ctx.beginPath();
 
 
+    const radio =
+      Math.round(
+        10 * escala
+      );
+
+
     ctx.roundRect(
       x,
       y,
       anchoCaja,
       altoCaja,
-      Math.round(10 * escala)
+      radio
     );
 
 
     ctx.fill();
 
+
+    /*
+     * Texto
+     */
 
     ctx.fillStyle =
       "rgba(255,255,255,.95)";
@@ -1158,24 +1319,23 @@ async function tomarFoto(){
 
 
     /*
-    ================================================
-     LOGO
-    ================================================
-    */
+     * LOGO
+     *
+     * IMPORTANTE:
+     * se dibuja aquí ANTES de crear
+     * fotoBase.
+     */
 
-    dibujarLogo(
+    dibujarLogoEnCanvas(
       ctx,
       width,
-      height,
-      escala
+      height
     );
 
 
     /*
-    ================================================
-     GUARDAR FOTO BASE
-    ================================================
-    */
+     * Guardar foto base
+     */
 
     fotoBase =
       canvas.toDataURL(
@@ -1185,10 +1345,9 @@ async function tomarFoto(){
 
 
     /*
-    ================================================
-     SIN SEÑALAR
-    ================================================
-    */
+     * Si no se señaló,
+     * guardar inmediatamente.
+     */
 
     if(!modoSenalar){
 
@@ -1204,10 +1363,8 @@ async function tomarFoto(){
 
 
     /*
-    ================================================
-     ABRIR VISOR
-    ================================================
-    */
+     * Abrir visor
+     */
 
     abrirVisorFlecha();
 
@@ -1215,8 +1372,10 @@ async function tomarFoto(){
   catch(error){
 
     console.error(
+      "ERROR TOMANDO FOTO:",
       error
     );
+
 
     status.textContent =
       "ERROR AL TOMAR FOTO:\n\n" +
@@ -1227,24 +1386,27 @@ async function tomarFoto(){
 }
 
 
-/*
-====================================================
+/*====================================================
  DIBUJAR LOGO
-====================================================
-*/
+====================================================*/
 
-function dibujarLogo(
+function dibujarLogoEnCanvas(
   ctx,
   width,
-  height,
-  escala
+  height
 ){
 
+  /*
+   * Si no cargó, no dibujamos.
+   */
+
   if(
-    !logoCargado ||
-    !logoPreload.complete ||
-    !logoPreload.naturalWidth
+    !logoListo ||
+    !logoImagen
   ){
+
+    zonaLogo =
+      null;
 
     return;
 
@@ -1252,34 +1414,51 @@ function dibujarLogo(
 
 
   /*
-   * TAMAÑO DEL LOGO
+   * Tamaño máximo del logo.
+   *
+   * Se calcula respecto a la foto.
    */
 
-  const logoWidth =
-    Math.round(
-      180 * escala
-    );
+  const maxWidth =
+    width * 0.18;
+
+
+  const maxHeight =
+    height * 0.14;
 
 
   const proporcion =
-    logoPreload.naturalHeight /
-    logoPreload.naturalWidth;
+    Math.min(
 
+      maxWidth /
+      logoImagen.width,
 
-  const logoHeight =
-    Math.round(
-      logoWidth *
-      proporcion
+      maxHeight /
+      logoImagen.height
+
     );
 
 
+  const logoWidth =
+    logoImagen.width *
+    proporcion;
+
+
+  const logoHeight =
+    logoImagen.height *
+    proporcion;
+
+
   /*
-   * MARGEN
+   * Margen
    */
 
   const margen =
-    Math.round(
-      25 * escala
+    Math.max(
+      20,
+      Math.round(
+        width * 0.025
+      )
     );
 
 
@@ -1298,8 +1477,49 @@ function dibujarLogo(
 
 
   /*
-   * FONDO SUAVE
+   * Zona bloqueada.
+   *
+   * Agregamos margen adicional.
    */
+
+  const bloqueo =
+    Math.max(
+      15,
+      Math.round(
+        width * 0.012
+      )
+    );
+
+
+  zonaLogo = {
+
+    x:
+      logoX -
+      bloqueo,
+
+    y:
+      logoY -
+      bloqueo,
+
+    width:
+      logoWidth +
+      bloqueo * 2,
+
+    height:
+      logoHeight +
+      bloqueo * 2
+
+  };
+
+
+  /*
+   * Fondo semitransparente
+   * opcional para que el logo
+   * se vea mejor.
+   */
+
+  ctx.save();
+
 
   ctx.fillStyle =
     "rgba(0,0,0,.20)";
@@ -1307,26 +1527,28 @@ function dibujarLogo(
 
   ctx.fillRect(
 
-    logoX - 8 * escala,
+    logoX -
+    5,
 
-    logoY - 8 * escala,
+    logoY -
+    5,
 
     logoWidth +
-    16 * escala,
+    10,
 
     logoHeight +
-    16 * escala
+    10
 
   );
 
 
   /*
-   * LOGO
+   * Logo
    */
 
   ctx.drawImage(
 
-    logoPreload,
+    logoImagen,
 
     logoX,
 
@@ -1338,14 +1560,21 @@ function dibujarLogo(
 
   );
 
+
+  ctx.restore();
+
+
+  console.log(
+    "ZONA LOGO BLOQUEADA:",
+    zonaLogo
+  );
+
 }
 
 
-/*
-====================================================
- ABRIR VISOR
-====================================================
-*/
+/*====================================================
+ ABRIR VISOR DE FLECHA
+====================================================*/
 
 function abrirVisorFlecha(){
 
@@ -1371,10 +1600,13 @@ function abrirVisorFlecha(){
 
 
       ctx.clearRect(
+
         0,
         0,
+
         arrowCanvas.width,
         arrowCanvas.height
+
       );
 
 
@@ -1413,23 +1645,37 @@ function abrirVisorFlecha(){
         "none";
 
 
-      colocandoFlecha =
-        true;
+      /*
+       * Reiniciar flecha
+       */
+
+      flechaX =
+        null;
 
 
-      flechaX = null;
+      flechaY =
+        null;
 
-      flechaY = null;
 
-      flechaAngulo = 0;
+      flechaAngulo =
+        0;
 
-      flechaEscala = 1;
+
+      flechaEscala =
+        1;
+
+
+      gestoActivo =
+        false;
 
 
       status.textContent =
-        "🎯 TOCA LA IMAGEN PARA COLOCAR LA FLECHA.\n\n" +
-        "La flecha no puede entrar en el estampado ni en el logo.\n\n" +
-        "Después puedes moverla, girarla y cambiar su tamaño.";
+        "🎯 TOCA LA FOTO PARA COLOCAR LA FLECHA.PP\n\n" +
+
+        "Puedes moverla con un dedo y " +
+        "girarla o cambiar su tamaño con dos dedosETA.\n\n" +
+
+        "🚫 El estampado y el logo están bloqueadosPP.";
 
     };
 
@@ -1440,11 +1686,9 @@ function abrirVisorFlecha(){
 }
 
 
-/*
-====================================================
- OBTENER PUNTO
-====================================================
-*/
+/*====================================================
+ OBTENER PUNTO DEL EVENTO
+====================================================*/
 
 function obtenerPuntoEvento(
   event
@@ -1485,22 +1729,13 @@ function obtenerPuntoEvento(
 }
 
 
-/*
-====================================================
- CLICK
-====================================================
-*/
+/*====================================================
+ CLICK / TOQUE PARA COLOCAR
+====================================================*/
 
 arrowCanvas.addEventListener(
   "click",
   function(event){
-
-    if(!colocandoFlecha){
-
-      return;
-
-    }
-
 
     if(
       Date.now() -
@@ -1519,129 +1754,26 @@ arrowCanvas.addEventListener(
       );
 
 
-    if(
-      puntoEstaEnZonaProhibida(
-        punto.x,
-        punto.y
-      )
-    ){
-
-      alert(
-        "La flecha no puede colocarse sobre el estampado ni sobre el logo."
-      );
-
-      return;
-
-    }
-
-
-    flechaX =
-      punto.x;
-
-
-    flechaY =
-      punto.y;
-
-
-    flechaAngulo =
-      0;
-
-
-    flechaEscala =
-      1;
-
-
-    dibujarFlecha();
-
-  }
-);
-
-
-/*
-====================================================
- TOUCH
-====================================================
-*/
-
-let toqueInicial = null;
-
-let distanciaInicial = null;
-
-let anguloInicial = null;
-
-let escalaInicial = null;
-
-
-arrowCanvas.addEventListener(
-  "touchstart",
-  function(event){
-
-    if(!colocandoFlecha){
-
-      return;
-
-    }
-
-
-    event.preventDefault();
-
-
-    ultimoToque =
-      Date.now();
-
-
     /*
-     * UN DEDO
+     * Primera colocación
      */
 
     if(
-      event.touches.length === 1
+      flechaX === null ||
+      flechaY === null
     ){
 
-      const punto =
-        obtenerPuntoEvento(
-          event.touches[0]
-        );
-
-
       if(
-        flechaX !== null &&
-        flechaY !== null &&
-        puntoDentroDeFlecha(
+        flechaChocaConZonas(
           punto.x,
-          punto.y
-        )
-      ){
-
-        arrastrandoFlecha =
-          true;
-
-        toqueInicial = {
-
-          x:punto.x,
-
-          y:punto.y,
-
-          fx:flechaX,
-
-          fy:flechaY
-
-        };
-
-        return;
-
-      }
-
-
-      if(
-        puntoEstaEnZonaProhibida(
-          punto.x,
-          punto.y
+          punto.y,
+          0,
+          1
         )
       ){
 
         alert(
-          "La flecha no puede colocarse sobre el estampado ni sobre el logo."
+          "🚫 La flecha no puede colocarse sobre el logo ni sobre el estampado."
         );
 
         return;
@@ -1667,44 +1799,212 @@ arrowCanvas.addEventListener(
 
       dibujarFlecha();
 
-      return;
+    }
+
+  }
+);
+
+
+/*====================================================
+ TOUCH START
+====================================================*/
+
+arrowCanvas.addEventListener(
+  "touchstart",
+  function(event){
+
+    event.preventDefault();
+
+
+    ultimoToque =
+      Date.now();
+
+
+    const touches =
+      event.touches;
+
+
+    /*
+     * Un dedo
+     */
+
+    if(
+      touches.length === 1
+    ){
+
+      const punto =
+        obtenerPuntoEvento(
+          touches[0]
+        );
+
+
+      /*
+       * Si todavía no existe,
+       * colocar flecha.
+       */
+
+      if(
+        flechaX === null
+      ){
+
+        if(
+          flechaChocaConZonas(
+            punto.x,
+            punto.y,
+            0,
+            1
+          )
+        ){
+
+          alert(
+            "🚫 La flecha no puede colocarse sobre el logo ni sobre el estampado."
+          );
+
+          return;
+
+        }
+
+
+        flechaX =
+          punto.x;
+
+
+        flechaY =
+          punto.y;
+
+
+        flechaAngulo =
+          0;
+
+
+        flechaEscala =
+          1;
+
+
+        dibujarFlecha();
+
+      }
+
+
+      gestoActivo =
+        true;
+
+
+      toqueInicial = {
+
+        tipo:
+          "move",
+
+        x:
+          punto.x,
+
+        y:
+          punto.y,
+
+        flechaX:
+          flechaX,
+
+        flechaY:
+          flechaY
+
+      };
 
     }
 
 
     /*
-     * DOS DEDOS
+     * Dos dedos
      */
 
-    if(
-      event.touches.length >= 2 &&
+    else if(
+      touches.length === 2 &&
       flechaX !== null
     ){
 
-      const t1 =
-        event.touches[0];
+      gestoActivo =
+        true;
 
 
-      const t2 =
-        event.touches[1];
-
-
-      distanciaInicial =
-        distanciaEntre(
-          t1,
-          t2
+      const p1 =
+        obtenerPuntoEvento(
+          touches[0]
         );
 
 
-      anguloInicial =
-        anguloEntre(
-          t1,
-          t2
+      const p2 =
+        obtenerPuntoEvento(
+          touches[1]
         );
 
 
-      escalaInicial =
-        flechaEscala;
+      const centroX =
+        (
+          p1.x +
+          p2.x
+        ) / 2;
+
+
+      const centroY =
+        (
+          p1.y +
+          p2.y
+        ) / 2;
+
+
+      const distancia =
+        Math.hypot(
+
+          p2.x -
+          p1.x,
+
+          p2.y -
+          p1.y
+
+        );
+
+
+      const angulo =
+        Math.atan2(
+
+          p2.y -
+          p1.y,
+
+          p2.x -
+          p1.x
+
+        );
+
+
+      toqueInicial = {
+
+        tipo:
+          "transform",
+
+        centroX:
+          centroX,
+
+        centroY:
+          centroY,
+
+        distancia:
+          distancia,
+
+        angulo:
+          angulo,
+
+        flechaX:
+          flechaX,
+
+        flechaY:
+          flechaY,
+
+        escala:
+          flechaEscala,
+
+        rotacion:
+          flechaAngulo
+
+      };
 
     }
 
@@ -1715,24 +2015,29 @@ arrowCanvas.addEventListener(
 );
 
 
-/*
-====================================================
+/*====================================================
  TOUCH MOVE
-====================================================
-*/
+====================================================*/
 
 arrowCanvas.addEventListener(
   "touchmove",
   function(event){
 
-    if(!colocandoFlecha){
+    event.preventDefault();
+
+
+    if(
+      !gestoActivo ||
+      !toqueInicial
+    ){
 
       return;
 
     }
 
 
-    event.preventDefault();
+    const touches =
+      event.touches;
 
 
     /*
@@ -1740,135 +2045,187 @@ arrowCanvas.addEventListener(
      */
 
     if(
-      event.touches.length === 1 &&
-      arrastrandoFlecha &&
-      toqueInicial
+      touches.length === 1 &&
+      toqueInicial.tipo === "move"
     ){
 
       const punto =
         obtenerPuntoEvento(
-          event.touches[0]
+          touches[0]
         );
+
+
+      const dx =
+        punto.x -
+        toqueInicial.x;
+
+
+      const dy =
+        punto.y -
+        toqueInicial.y;
 
 
       const nuevoX =
-        toqueInicial.fx +
-        (
-          punto.x -
-          toqueInicial.x
-        );
+        toqueInicial.flechaX +
+        dx;
 
 
       const nuevoY =
-        toqueInicial.fy +
-        (
-          punto.y -
-          toqueInicial.y
-        );
+        toqueInicial.flechaY +
+        dy;
 
+
+      /*
+       * No permitir entrar
+       * en logo/estampado.
+       */
 
       if(
-        !puntoEstaEnZonaProhibida(
+        !flechaChocaConZonas(
           nuevoX,
-          nuevoY
+          nuevoY,
+          flechaAngulo,
+          flechaEscala
         )
       ){
 
         flechaX =
           nuevoX;
 
+
         flechaY =
           nuevoY;
+
 
         dibujarFlecha();
 
       }
 
-      return;
-
     }
 
 
     /*
-     * DOS DEDOS
+     * GIRAR + ESCALAR CON DOS DEDOS
      */
 
-    if(
-      event.touches.length >= 2 &&
-      flechaX !== null
+    else if(
+      touches.length === 2 &&
+      toqueInicial.tipo ===
+        "transform"
     ){
 
-      const t1 =
-        event.touches[0];
-
-
-      const t2 =
-        event.touches[1];
-
-
-      const distanciaActual =
-        distanciaEntre(
-          t1,
-          t2
+      const p1 =
+        obtenerPuntoEvento(
+          touches[0]
         );
 
 
-      const anguloActual =
-        anguloEntre(
-          t1,
-          t2
+      const p2 =
+        obtenerPuntoEvento(
+          touches[1]
+        );
+
+
+      const centroX =
+        (
+          p1.x +
+          p2.x
+        ) / 2;
+
+
+      const centroY =
+        (
+          p1.y +
+          p2.y
+        ) / 2;
+
+
+      const distancia =
+        Math.hypot(
+
+          p2.x -
+          p1.x,
+
+          p2.y -
+          p1.y
+
+        );
+
+
+      const angulo =
+        Math.atan2(
+
+          p2.y -
+          p1.y,
+
+          p2.x -
+          p1.x
+
         );
 
 
       /*
-       * CAMBIAR TAMAÑO
+       * Escala
        */
 
-      if(
-        distanciaInicial
-      ){
-
-        let factor =
-          distanciaActual /
-          distanciaInicial;
-
-
-        flechaEscala =
-          escalaInicial *
-          factor;
-
-
-        flechaEscala =
-          Math.max(
-            0.45,
-            Math.min(
-              2.5,
-              flechaEscala
-            )
-          );
-
-      }
+      let nuevaEscala =
+        toqueInicial.escala *
+        (
+          distancia /
+          toqueInicial.distancia
+        );
 
 
       /*
-       * GIRAR
+       * Limites de tamaño
+       */
+
+      nuevaEscala =
+        Math.max(
+          0.35,
+          Math.min(
+            3,
+            nuevaEscala
+          )
+        );
+
+
+      /*
+       * Rotación
+       */
+
+      const nuevaRotacion =
+        toqueInicial.rotacion +
+        (
+          angulo -
+          toqueInicial.angulo
+        );
+
+
+      /*
+       * Comprobar toda la flecha.
        */
 
       if(
-        anguloInicial !== null
+        !flechaChocaConZonas(
+          toqueInicial.flechaX,
+          toqueInicial.flechaY,
+          nuevaRotacion,
+          nuevaEscala
+        )
       ){
 
         flechaAngulo =
-          anguloInicial === null
-          ? 0
-          :
-          anguloActual -
-          anguloInicial;
+          nuevaRotacion;
+
+
+        flechaEscala =
+          nuevaEscala;
+
+
+        dibujarFlecha();
 
       }
-
-
-      dibujarFlecha();
 
     }
 
@@ -1879,368 +2236,304 @@ arrowCanvas.addEventListener(
 );
 
 
-/*
-====================================================
+/*====================================================
  TOUCH END
-====================================================
-*/
+====================================================*/
 
 arrowCanvas.addEventListener(
   "touchend",
-  function(){
+  function(event){
 
-    arrastrandoFlecha =
-      false;
+    event.preventDefault();
 
-    toqueInicial =
-      null;
 
-    distanciaInicial =
-      null;
+    if(
+      event.touches.length === 0
+    ){
 
-    anguloInicial =
-      null;
+      gestoActivo =
+        false;
 
+
+      toqueInicial =
+        null;
+
+    }
+
+  },
+  {
+    passive:false
   }
 );
 
 
-/*
-====================================================
- DISTANCIA
-====================================================
-*/
-
-function distanciaEntre(
-  a,
-  b
-){
-
-  const dx =
-    b.clientX -
-    a.clientX;
-
-
-  const dy =
-    b.clientY -
-    a.clientY;
-
-
-  return Math.sqrt(
-    dx * dx +
-    dy * dy
-  );
-
-}
-
+/*====================================================
+ COMPROBAR ZONAS PROHIBIDAS
+====================================================*/
 
 /*
-====================================================
- ANGULO
-====================================================
-*/
+ * Esta es la parte importante.
+ *
+ * No comprobamos solamente la punta.
+ *
+ * Comprobamos varios puntos alrededor
+ * de TODA la flecha.
+ */
 
-function anguloEntre(
-  a,
-  b
-){
-
-  return Math.atan2(
-
-    b.clientY -
-    a.clientY,
-
-    b.clientX -
-    a.clientX
-
-  );
-
-}
-
-
-/*
-====================================================
- DENTRO DE FLECHA
-====================================================
-*/
-
-function puntoDentroDeFlecha(
+function flechaChocaConZonas(
   x,
-  y
+  y,
+  angulo,
+  escala
 ){
 
-  if(
-    flechaX === null ||
-    flechaY === null
-  ){
+  /*
+   * Dimensiones base
+   */
 
-    return false;
-
-  }
-
-
-  const escala =
+  const factor =
     Math.max(
       arrowCanvas.width,
       arrowCanvas.height
     ) / 1200;
 
 
-  const radio =
-    100 *
-    escala *
-    flechaEscala;
+  const longitud =
+    150 *
+    factor *
+    escala;
 
 
-  const distancia =
-    Math.sqrt(
-
-      Math.pow(
-        x - flechaX,
-        2
-      ) +
-
-      Math.pow(
-        y - flechaY,
-        2
-      )
-
-    );
-
-
-  return distancia <= radio;
-
-}
-
-
-/*
-====================================================
- ZONA PROHIBIDA
- ESTAMPADO + LOGO
-====================================================
-*/
-
-function puntoEstaEnZonaProhibida(
-  x,
-  y
-){
-
-  const width =
-    arrowCanvas.width;
-
-
-  const height =
-    arrowCanvas.height;
-
-
-  const escala =
+  const grosor =
     Math.max(
-      width,
-      height
-    ) / 1200;
+      8,
+      9 *
+      factor *
+      escala
+    );
 
 
   /*
-   * ESTAMPADO
+   * La flecha va desde
+   * un punto inicial hasta la punta.
    */
 
-  const padding =
-    Math.round(
-      16 * escala
+  const inicioX =
+    x -
+    longitud *
+    Math.cos(
+      angulo +
+      Math.PI / 4
     );
 
 
-  const font =
-    Math.max(
-      16,
-      Math.round(
-        20 * escala
-      )
+  const inicioY =
+    y -
+    longitud *
+    Math.sin(
+      angulo +
+      Math.PI / 4
     );
 
 
-  const altoLinea =
-    Math.round(
-      27 * escala
-    );
+  /*
+   * Revisar muchos puntos
+   * a lo largo del cuerpo.
+   */
+
+  const pasos =
+    18;
 
 
-  const lineas = [
+  for(
+    let i = 0;
+    i <= pasos;
+    i++
+  ){
 
-    "PROYECTO: " +
+    const t =
+      i / pasos;
+
+
+    const px =
+      inicioX +
       (
-        proyecto ||
-        "SIN PROYECTO"
-      ),
+        x -
+        inicioX
+      ) *
+      t;
 
-    "TIPO PROYECTO: " +
+
+    const py =
+      inicioY +
       (
-        tipoProyecto ||
-        "SIN TIPO"
-      ),
-
-    "TIPO FOTO: " +
-      obtenerNombreTipoFoto(tipo),
-
-    "FECHA / HORA",
-
-    "LAT / LON"
-
-  ];
+        y -
+        inicioY
+      ) *
+      t;
 
 
-  const ctx =
-    arrowCanvas.getContext(
-      "2d"
-    );
+    /*
+     * Revisar alrededor
+     * del cuerpo.
+     */
+
+    const margen =
+      grosor *
+      1.8;
 
 
-  ctx.font =
-    "bold " +
-    font +
-    "px Arial";
+    const puntos = [
+
+      {
+        x:px,
+        y:py
+      },
+
+      {
+        x:px + margen,
+        y:py
+      },
+
+      {
+        x:px - margen,
+        y:py
+      },
+
+      {
+        x:px,
+        y:py + margen
+      },
+
+      {
+        x:px,
+        y:py - margen
+      }
+
+    ];
 
 
-  let anchoTexto =
-    0;
+    for(
+      const punto of puntos
+    ){
+
+      if(
+        puntoEnRectangulo(
+          punto.x,
+          punto.y,
+          zonaEstampado
+        )
+      ){
+
+        return true;
+
+      }
 
 
-  lineas.forEach(
-    function(texto){
+      if(
+        puntoEnRectangulo(
+          punto.x,
+          punto.y,
+          zonaLogo
+        )
+      ){
 
-      anchoTexto =
-        Math.max(
+        return true;
 
-          anchoTexto,
-
-          ctx.measureText(
-            texto
-          ).width
-
-        );
+      }
 
     }
-  );
-
-
-  const anchoCaja =
-    anchoTexto +
-    padding * 2;
-
-
-  const altoCaja =
-    lineas.length *
-    altoLinea +
-    padding * 2;
-
-
-  const cajaX =
-    padding;
-
-
-  const cajaY =
-    height -
-    altoCaja -
-    padding;
-
-
-  const margen =
-    35 * escala;
-
-
-  const dentroEstampado =
-
-    x >=
-      cajaX - margen &&
-
-    x <=
-      cajaX +
-      anchoCaja +
-      margen &&
-
-    y >=
-      cajaY - margen &&
-
-    y <=
-      cajaY +
-      altoCaja +
-      margen;
-
-
-  if(dentroEstampado){
-
-    return true;
 
   }
 
 
   /*
-   * LOGO
+   * Revisar también la cabeza
    */
 
-  if(
-    logoCargado &&
-    logoPreload.naturalWidth
+  const punta =
+    32 *
+    factor *
+    escala;
+
+
+  const cabezaPuntos = [
+
+    {
+      x:
+        x,
+
+      y:
+        y
+
+    },
+
+    {
+      x:
+        x +
+        punta,
+
+      y:
+        y
+
+    },
+
+    {
+      x:
+        x -
+        punta,
+
+      y:
+        y
+
+    },
+
+    {
+      x:
+        x,
+
+      y:
+        y +
+        punta
+
+    },
+
+    {
+      x:
+        x,
+
+      y:
+        y -
+        punta
+
+    }
+
+  ];
+
+
+  for(
+    const punto of cabezaPuntos
   ){
 
-    const logoWidth =
-      Math.round(
-        180 * escala
-      );
+    if(
+      puntoEnRectangulo(
+        punto.x,
+        punto.y,
+        zonaEstampado
+      )
+    ){
 
+      return true;
 
-    const proporcion =
-      logoPreload.naturalHeight /
-      logoPreload.naturalWidth;
-
-
-    const logoHeight =
-      Math.round(
-        logoWidth *
-        proporcion
-      );
-
-
-    const margenLogo =
-      Math.round(
-        25 * escala
-      );
-
-
-    const logoX =
-      width -
-      logoWidth -
-      margenLogo;
-
-
-    const logoY =
-      margenLogo;
-
-
-    const margenExtra =
-      25 * escala;
+    }
 
 
     if(
-
-      x >=
-        logoX -
-        margenExtra &&
-
-      x <=
-        logoX +
-        logoWidth +
-        margenExtra &&
-
-      y >=
-        logoY -
-        margenExtra &&
-
-      y <=
-        logoY +
-        logoHeight +
-        margenExtra
-
+      puntoEnRectangulo(
+        punto.x,
+        punto.y,
+        zonaLogo
+      )
     ){
 
       return true;
@@ -2255,13 +2548,57 @@ function puntoEstaEnZonaProhibida(
 }
 
 
-/*
-====================================================
+/*====================================================
+ PUNTO EN RECTANGULO
+====================================================*/
+
+function puntoEnRectangulo(
+  x,
+  y,
+  rect
+){
+
+  if(!rect){
+
+    return false;
+
+  }
+
+
+  return (
+
+    x >= rect.x &&
+
+    x <=
+      rect.x +
+      rect.width &&
+
+    y >= rect.y &&
+
+    y <=
+      rect.y +
+      rect.height
+
+  );
+
+}
+
+
+/*====================================================
  DIBUJAR FLECHA
-====================================================
-*/
+====================================================*/
 
 function dibujarFlecha(){
+
+  if(
+    flechaX === null ||
+    flechaY === null
+  ){
+
+    return;
+
+  }
+
 
   const imagen =
     new Image();
@@ -2277,46 +2614,45 @@ function dibujarFlecha(){
 
 
       ctx.clearRect(
+
         0,
         0,
+
         arrowCanvas.width,
         arrowCanvas.height
+
       );
 
 
       ctx.drawImage(
+
         imagen,
+
         0,
         0
+
       );
 
 
-      if(
-        flechaX === null ||
-        flechaY === null
-      ){
-
-        return;
-
-      }
-
-
-      const escalaBase =
+      const factor =
         Math.max(
+
           arrowCanvas.width,
+
           arrowCanvas.height
+
         ) / 1200;
 
 
       const longitud =
         150 *
-        escalaBase *
+        factor *
         flechaEscala;
 
 
       const punta =
         32 *
-        escalaBase *
+        factor *
         flechaEscala;
 
 
@@ -2324,7 +2660,8 @@ function dibujarFlecha(){
         flechaX -
         longitud *
         Math.cos(
-          flechaAngulo
+          flechaAngulo +
+          Math.PI / 4
         );
 
 
@@ -2332,12 +2669,13 @@ function dibujarFlecha(){
         flechaY -
         longitud *
         Math.sin(
-          flechaAngulo
+          flechaAngulo +
+          Math.PI / 4
         );
 
 
       /*
-       * VERDE
+       * BORDE NEGRO
        */
 
       ctx.beginPath();
@@ -2356,14 +2694,14 @@ function dibujarFlecha(){
 
 
       ctx.strokeStyle =
-        "#00ff44";
+        "#000000";
 
 
       ctx.lineWidth =
         Math.max(
-          8,
-          9 *
-          escalaBase *
+          12,
+          13 *
+          factor *
           flechaEscala
         );
 
@@ -2376,7 +2714,7 @@ function dibujarFlecha(){
 
 
       /*
-       * BORDE OSCURO
+       * FLECHA VERDE
        */
 
       ctx.beginPath();
@@ -2395,27 +2733,23 @@ function dibujarFlecha(){
 
 
       ctx.strokeStyle =
-        "#003d12";
+        "#00ff00";
 
 
       ctx.lineWidth =
         Math.max(
-          12,
-          13 *
-          escalaBase *
+          7,
+          9 *
+          factor *
           flechaEscala
         );
 
 
-      ctx.globalCompositeOperation =
-        "destination-over";
+      ctx.lineCap =
+        "round";
 
 
       ctx.stroke();
-
-
-      ctx.globalCompositeOperation =
-        "source-over";
 
 
       /*
@@ -2438,8 +2772,11 @@ function dibujarFlecha(){
 
 
       ctx.moveTo(
+
         flechaX,
+
         flechaY
+
       );
 
 
@@ -2485,21 +2822,25 @@ function dibujarFlecha(){
 
 
       ctx.fillStyle =
-        "#00ff44";
+        "#00ff00";
 
 
       ctx.fill();
 
 
+      /*
+       * BORDE DE LA CABEZA
+       */
+
       ctx.strokeStyle =
-        "#003d12";
+        "#000000";
 
 
       ctx.lineWidth =
         Math.max(
           3,
           4 *
-          escalaBase *
+          factor *
           flechaEscala
         );
 
@@ -2515,19 +2856,13 @@ function dibujarFlecha(){
 }
 
 
-/*
-====================================================
+/*====================================================
  CANCELAR SEÑAL
-====================================================
-*/
+====================================================*/
 
 cancelSignalButton.addEventListener(
   "click",
   function(){
-
-    colocandoFlecha =
-      false;
-
 
     flechaX =
       null;
@@ -2537,7 +2872,23 @@ cancelSignalButton.addEventListener(
       null;
 
 
+    flechaAngulo =
+      0;
+
+
+    flechaEscala =
+      1;
+
+
     fotoBase =
+      null;
+
+
+    zonaLogo =
+      null;
+
+
+    zonaEstampado =
       null;
 
 
@@ -2573,21 +2924,27 @@ cancelSignalButton.addEventListener(
 
 
     status.textContent =
-      "Se canceló el señalamiento.";
+      "Se canceló el señalamiento.\n\n" +
+      "Puedes tomar otra fotografía.";
 
   }
 );
 
 
-/*
-====================================================
- CONFIRMAR
-====================================================
-*/
+/*====================================================
+ CONFIRMAR FOTO
+====================================================*/
 
 confirmButton.addEventListener(
   "click",
   function(){
+
+    if(!fotoBase){
+
+      return;
+
+    }
+
 
     if(
       flechaX === null ||
@@ -2595,7 +2952,33 @@ confirmButton.addEventListener(
     ){
 
       alert(
-        "Primero coloca la flecha."
+        "Primero toca la imagen para colocar la flecha."
+      );
+
+      return;
+
+    }
+
+
+    /*
+     * Comprobación final.
+     *
+     * Por seguridad volvemos a revisar
+     * antes de guardar.
+     */
+
+    if(
+      flechaChocaConZonas(
+        flechaX,
+        flechaY,
+        flechaAngulo,
+        flechaEscala
+      )
+    ){
+
+      alert(
+        "🚫 La flecha invade el logo o el estampado.\n\n" +
+        "Muévela a otra zona antes de confirmar."
       );
 
       return;
@@ -2612,7 +2995,8 @@ confirmButton.addEventListener(
 
     enviarFotoFinal(
       dataURL,
-      new Date(),
+      fechaFoto ||
+        new Date(),
       gpsActual
     );
 
@@ -2620,11 +3004,9 @@ confirmButton.addEventListener(
 );
 
 
-/*
-====================================================
- ENVIAR FOTO
-====================================================
-*/
+/*====================================================
+ ENVIAR FOTO FINAL
+====================================================*/
 
 function enviarFotoFinal(
   dataURL,
@@ -2711,6 +3093,13 @@ function enviarFotoFinal(
         window.close();
 
       }
+      else{
+
+        status.textContent =
+          "✅ FOTO CAPTURADA.\n\n" +
+          "Puedes regresar manualmente al formulario.";
+
+      }
 
     },
     500
@@ -2719,11 +3108,9 @@ function enviarFotoFinal(
 }
 
 
-/*
-====================================================
+/*====================================================
  GPS
-====================================================
-*/
+====================================================*/
 
 function obtenerGPS(){
 
@@ -2757,7 +3144,13 @@ function obtenerGPS(){
 
         },
 
-        function(){
+        function(error){
+
+          console.warn(
+            "GPS ERROR:",
+            error
+          );
+
 
           resolve(null);
 
@@ -2765,11 +3158,14 @@ function obtenerGPS(){
 
         {
 
-          enableHighAccuracy:true,
+          enableHighAccuracy:
+            true,
 
-          timeout:10000,
+          timeout:
+            10000,
 
-          maximumAge:0
+          maximumAge:
+            0
 
         }
 
@@ -2781,27 +3177,35 @@ function obtenerGPS(){
 }
 
 
-/*
-====================================================
+/*====================================================
  TIPO FOTO
-====================================================
-*/
+====================================================*/
 
-function obtenerNombreTipoFoto(tipo){
+function obtenerNombreTipoFoto(
+  tipo
+){
 
-  if(tipo === "poste")
+  if(
+    tipo === "poste"
+  )
     return "POSTE";
 
 
-  if(tipo === "mega")
+  if(
+    tipo === "mega"
+  )
     return "CAJAS MEGA";
 
 
-  if(tipo === "medidores")
+  if(
+    tipo === "medidores"
+  )
     return "MEDIDORES";
 
 
-  if(tipo === "carriers")
+  if(
+    tipo === "carriers"
+  )
     return "CAJAS CARRIERS";
 
 
@@ -2812,11 +3216,9 @@ function obtenerNombreTipoFoto(tipo){
 }
 
 
-/*
-====================================================
+/*====================================================
  NOMBRE FOTO
-====================================================
-*/
+====================================================*/
 
 function crearNombreFoto(
   tipo,
@@ -2828,7 +3230,10 @@ function crearNombreFoto(
     "STAMPED_" +
 
     obtenerNombreTipoFoto(tipo)
-      .replace(/\s+/g,"_") +
+      .replace(
+        /\s+/g,
+        "_"
+      ) +
 
     "_" +
 
@@ -2841,46 +3246,81 @@ function crearNombreFoto(
 }
 
 
+/*====================================================
+ FECHA ARCHIVO
+====================================================*/
+
 function formatFileDate(
   date
 ){
 
-  return (
+  const year =
+    date.getFullYear();
 
-    date.getFullYear() +
 
+  const month =
     String(
-      date.getMonth()+1
-    ).padStart(2,"0") +
+      date.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
 
+
+  const day =
     String(
       date.getDate()
-    ).padStart(2,"0") +
+    ).padStart(
+      2,
+      "0"
+    );
 
-    "_" +
 
+  const hour =
     String(
       date.getHours()
-    ).padStart(2,"0") +
+    ).padStart(
+      2,
+      "0"
+    );
 
+
+  const minute =
     String(
       date.getMinutes()
-    ).padStart(2,"0") +
+    ).padStart(
+      2,
+      "0"
+    );
 
+
+  const second =
     String(
       date.getSeconds()
-    ).padStart(2,"0")
+    ).padStart(
+      2,
+      "0"
+    );
+
+
+  return (
+
+    year +
+    month +
+    day +
+    "_" +
+    hour +
+    minute +
+    second
 
   );
 
 }
 
 
-/*
-====================================================
- CANCELAR
-====================================================
-*/
+/*====================================================
+ CANCELAR CÁMARA
+====================================================*/
 
 cancelButton.addEventListener(
   "click",
@@ -2902,11 +3342,9 @@ cancelButton.addEventListener(
 );
 
 
-/*
-====================================================
+/*====================================================
  DETENER CÁMARA
-====================================================
-*/
+====================================================*/
 
 function detenerCamara(){
 
@@ -2939,11 +3377,9 @@ function detenerCamara(){
 }
 
 
-/*
-====================================================
- INICIO AUTOMÁTICO
-====================================================
-*/
+/*====================================================
+ INICIAR AUTOMÁTICAMENTE
+====================================================*/
 
 window.addEventListener(
   "load",
@@ -2958,11 +3394,13 @@ window.addEventListener(
 
 
     /*
-     * Primero carga el logo.
-     * Después abre la cámara.
+     * Intentar cargar logo desde el principio
      */
 
-    prepararSistema();
+    cargarLogo();
+
+
+    iniciarCamara();
 
   }
 );
