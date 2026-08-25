@@ -68,7 +68,37 @@ h2 {
 
 
 /*==================================================
- BOTONES DENTRO DE LA CÁMARA
+ VISOR DE SEÑALAMIENTO
+==================================================*/
+
+#arrowEditor {
+
+  display:none;
+
+  position:relative;
+
+  width:100%;
+
+  background:#000;
+
+}
+
+
+#arrowCanvas {
+
+  width:100%;
+
+  display:block;
+
+  background:#000;
+
+  cursor:crosshair;
+
+}
+
+
+/*==================================================
+ BOTONES
 ==================================================*/
 
 #cameraControls {
@@ -89,7 +119,7 @@ h2 {
 
   background:linear-gradient(
     transparent,
-    rgba(0,0,0,.75)
+    rgba(0,0,0,.80)
   );
 
   z-index:10;
@@ -105,7 +135,7 @@ h2 {
 
   padding:12px;
 
-  font-size:16px;
+  font-size:15px;
 
   font-weight:bold;
 
@@ -136,11 +166,52 @@ h2 {
 }
 
 
+#signalButton {
+
+  background:#ff9800;
+
+  color:white;
+
+}
+
+
+#signalButton.active {
+
+  background:#e65100;
+
+  box-shadow:
+    0 0 0 3px rgba(255,152,0,.35);
+
+}
+
+
 #cancelButton {
 
   background:#f44336;
 
   color:white;
+
+}
+
+
+#confirmButton {
+
+  background:#4caf50;
+
+  color:white;
+
+  display:none;
+
+}
+
+
+#cancelSignalButton {
+
+  background:#f44336;
+
+  color:white;
+
+  display:none;
 
 }
 
@@ -168,7 +239,7 @@ h2 {
 
 
 /*==================================================
- MENSAJE OCULTO
+ MENSAJE
 ==================================================*/
 
 #status {
@@ -217,6 +288,26 @@ h2 {
   }
 
 
+  #arrowEditor {
+
+    width:100vw;
+
+    height:100vh;
+
+  }
+
+
+  #arrowCanvas {
+
+    width:100vw;
+
+    height:100vh;
+
+    object-fit:contain;
+
+  }
+
+
   #cameraControls {
 
     padding:
@@ -236,7 +327,7 @@ h2 {
 
     min-height:52px;
 
-    font-size:15px;
+    font-size:14px;
 
   }
 
@@ -258,7 +349,22 @@ h2 {
     muted>
   </video>
 
+
   <canvas id="canvas"></canvas>
+
+
+  <!-- ============================================
+       VISOR PARA COLOCAR LA FLECHA
+  ============================================= -->
+
+  <div id="arrowEditor">
+
+    <canvas
+      id="arrowCanvas">
+    </canvas>
+
+  </div>
+
 
   <div id="cameraControls">
 
@@ -267,11 +373,31 @@ h2 {
       📷 START CAMERA
     </button>
 
+
+    <button
+      id="signalButton">
+      🎯 SEÑALAR
+    </button>
+
+
     <button
       id="takeButton"
       disabled>
       📸 TAKE PHOTO
     </button>
+
+
+    <button
+      id="confirmButton">
+      ✅ CONFIRMAR
+    </button>
+
+
+    <button
+      id="cancelSignalButton">
+      ❌ CANCELAR SEÑAL
+    </button>
+
 
     <button
       id="cancelButton">
@@ -282,7 +408,9 @@ h2 {
 
 </div>
 
+
 <img id="preview">
+
 
 <div id="status"></div>
 
@@ -342,25 +470,55 @@ console.log(
 const video =
   document.getElementById("video");
 
+
 const canvas =
   document.getElementById("canvas");
+
 
 const preview =
   document.getElementById("preview");
 
+
 const startButton =
   document.getElementById("startButton");
+
+
+const signalButton =
+  document.getElementById("signalButton");
+
 
 const takeButton =
   document.getElementById("takeButton");
 
+
+const confirmButton =
+  document.getElementById("confirmButton");
+
+
+const cancelSignalButton =
+  document.getElementById(
+    "cancelSignalButton"
+  );
+
+
 const cancelButton =
   document.getElementById("cancelButton");
+
 
 const status =
   document.getElementById("status");
 
 
+const arrowEditor =
+  document.getElementById(
+    "arrowEditor"
+  );
+
+
+const arrowCanvas =
+  document.getElementById(
+    "arrowCanvas"
+  );
 
 
 /*
@@ -370,6 +528,43 @@ const status =
 */
 
 let stream = null;
+
+
+/*
+ * Indica si el usuario activó SEÑALAR
+ */
+
+let modoSenalar = false;
+
+
+/*
+ * Indica si estamos colocando la flecha
+ */
+
+let colocandoFlecha = false;
+
+
+/*
+ * Coordenadas de la flecha
+ */
+
+let flechaX = null;
+
+let flechaY = null;
+
+
+/*
+ * Imagen original estampada
+ */
+
+let fotoBase = null;
+
+
+/*
+ * GPS
+ */
+
+let gpsActual = null;
 
 
 /*
@@ -392,12 +587,6 @@ async function iniciarCamara(){
       "Solicitando permiso de cámara...";
 
 
-    /*
-    ================================================
-     VALIDAR API
-    ================================================
-    */
-
     if(
       !navigator.mediaDevices ||
       !navigator.mediaDevices.getUserMedia
@@ -410,20 +599,8 @@ async function iniciarCamara(){
     }
 
 
-    /*
-    ================================================
-     DETENER CÁMARA ANTERIOR
-    ================================================
-    */
-
     detenerCamara();
 
-
-    /*
-    ================================================
-     SOLICITAR CÁMARA TRASERA
-    ================================================
-    */
 
     stream =
       await navigator.mediaDevices.getUserMedia({
@@ -449,12 +626,6 @@ async function iniciarCamara(){
       });
 
 
-    /*
-    ================================================
-     MOSTRAR VIDEO
-    ================================================
-    */
-
     video.srcObject =
       stream;
 
@@ -463,15 +634,20 @@ async function iniciarCamara(){
 
 
     startButton.style.display =
-  "none";
+      "none";
 
-takeButton.disabled =
-  false;
+
+    signalButton.style.display =
+      "block";
+
+
+    takeButton.disabled =
+      false;
 
 
     status.textContent =
       "✅ Cámara lista.\n\n" +
-      "Presiona TAKE PHOTO.";
+      "Puedes tomar la foto directamente o activar SEÑALAR.";
 
 
   }
@@ -532,14 +708,85 @@ takeButton.disabled =
 
     status.textContent =
       mensaje;
- startButton.style.display =
-    "block";
 
 
-  takeButton.disabled =
-    true;
-    
+    startButton.style.display =
+      "block";
+
+
+    takeButton.disabled =
+      true;
+
   }
+
+}
+
+
+/*
+====================================================
+ BOTÓN SEÑALAR
+====================================================
+*/
+
+signalButton.addEventListener(
+  "click",
+  activarSenalar
+);
+
+
+function activarSenalar(){
+
+  modoSenalar =
+    !modoSenalar;
+
+
+  if(modoSenalar){
+
+    signalButton.classList.add(
+      "active"
+    );
+
+
+    signalButton.textContent =
+      "🎯 SEÑALAR ACTIVADO";
+
+
+    status.textContent =
+      "🎯 MODO SEÑALAR ACTIVADO.\n\n" +
+
+      "Toma la fotografía.\n" +
+
+      "Después podrás colocar la flecha.";
+
+  }
+  else{
+
+    desactivarSenalar();
+
+  }
+
+}
+
+
+/*
+====================================================
+ DESACTIVAR SEÑALAR
+====================================================
+*/
+
+function desactivarSenalar(){
+
+  modoSenalar =
+    false;
+
+
+  signalButton.classList.remove(
+    "active"
+  );
+
+
+  signalButton.textContent =
+    "🎯 SEÑALAR";
 
 }
 
@@ -591,7 +838,7 @@ async function tomarFoto(){
 
     /*
     ================================================
-     OBTENER GPS REAL DEL TELÉFONO
+     GPS
     ================================================
     */
 
@@ -603,6 +850,10 @@ async function tomarFoto(){
       await obtenerGPS();
 
 
+    gpsActual =
+      posicion;
+
+
     /*
     ================================================
      CANVAS
@@ -611,6 +862,7 @@ async function tomarFoto(){
 
     canvas.width =
       width;
+
 
     canvas.height =
       height;
@@ -702,7 +954,7 @@ async function tomarFoto(){
 
     /*
     ================================================
-     TEXTO DEL ESTAMPADO
+     TEXTO ESTAMPADO
     ================================================
     */
 
@@ -795,7 +1047,7 @@ async function tomarFoto(){
 
     /*
     ================================================
-     POSICIÓN
+     POSICIÓN DEL ESTAMPADO
     ================================================
     */
 
@@ -811,7 +1063,7 @@ async function tomarFoto(){
 
     /*
     ================================================
-     CAJA SEMITRANSPARENTE
+     CAJA
     ================================================
     */
 
@@ -882,11 +1134,11 @@ async function tomarFoto(){
 
     /*
     ================================================
-     CREAR JPG
+     GUARDAR FOTO BASE
     ================================================
     */
 
-    const dataURL =
+    fotoBase =
       canvas.toDataURL(
         "image/jpeg",
         0.90
@@ -895,130 +1147,30 @@ async function tomarFoto(){
 
     /*
     ================================================
-     PREVIEW
+     SI NO SEÑALÓ
     ================================================
     */
 
-    preview.src =
-      dataURL;
+    if(!modoSenalar){
 
-
-    preview.style.display =
-      "block";
-
-
-    /*
-    ================================================
-     NOMBRE
-    ================================================
-    */
-
-    const nombre =
-      crearNombreFoto(
-        tipo,
-        ahora
+      enviarFotoFinal(
+        fotoBase,
+        ahora,
+        posicion
       );
 
-
-    /*
-    ================================================
-     MENSAJE AL FORMULARIO
-    ================================================
-    */
-
-    const mensaje = {
-
-      type:
-        "CAMERA_STAMP_PHOTO",
-
-      tipo:
-        tipo,
-
-      fileName:
-        nombre,
-
-      mimeType:
-        "image/jpeg",
-
-      data:
-        dataURL,
-
-      latitud:
-        posicion
-          ? posicion.lat
-          : null,
-
-      longitud:
-        posicion
-          ? posicion.lng
-          : null
-
-    };
-
-
-    /*
-    ================================================
-     ENVIAR AL FORMULARIO
-    ================================================
-    */
-
-    if(
-      window.opener &&
-      !window.opener.closed
-    ){
-
-      window.opener.postMessage(
-        mensaje,
-        "*"
-      );
+      return;
 
     }
 
 
     /*
     ================================================
-     MENSAJE
+     MODO SEÑALAR
     ================================================
     */
 
-    status.textContent =
-      "✅ FOTO CAPTURADA.\n\n" +
-      "Regresando al formulario...";
-
-
-    /*
-    ================================================
-     CERRAR CÁMARA
-    ================================================
-    */
-
-    detenerCamara();
-
-
-    setTimeout(
-      function(){
-
-        if(
-          window.opener &&
-          !window.opener.closed
-        ){
-
-          window.opener.focus();
-
-          window.close();
-
-        }
-        else{
-
-          status.textContent =
-            "✅ FOTO CAPTURADA.\n\n" +
-            "Puedes regresar manualmente al formulario.";
-
-        }
-
-      },
-      500
-    );
+    abrirVisorFlecha();
 
   }
   catch(error){
@@ -1036,6 +1188,888 @@ async function tomarFoto(){
   }
 
 }
+
+
+/*
+====================================================
+ ABRIR VISOR DE FLECHA
+====================================================
+*/
+
+function abrirVisorFlecha(){
+
+  const imagen =
+    new Image();
+
+
+  imagen.onload =
+    function(){
+
+      arrowCanvas.width =
+        imagen.width;
+
+
+      arrowCanvas.height =
+        imagen.height;
+
+
+      const ctx =
+        arrowCanvas.getContext(
+          "2d"
+        );
+
+
+      ctx.clearRect(
+        0,
+        0,
+        arrowCanvas.width,
+        arrowCanvas.height
+      );
+
+
+      ctx.drawImage(
+        imagen,
+        0,
+        0
+      );
+
+
+      arrowEditor.style.display =
+        "block";
+
+
+      video.style.display =
+        "none";
+
+
+      signalButton.style.display =
+        "none";
+
+
+      takeButton.style.display =
+        "none";
+
+
+      confirmButton.style.display =
+        "block";
+
+
+      cancelSignalButton.style.display =
+        "block";
+
+
+      cancelButton.style.display =
+        "none";
+
+
+      colocandoFlecha =
+        true;
+
+
+      status.textContent =
+        "🎯 TOCA LA IMAGEN DONDE QUIERES COLOCAR LA FLECHA.\n\n" +
+
+        "La flecha no podrá colocarse sobre el estampado.";
+
+    };
+
+
+  imagen.src =
+    fotoBase;
+
+}
+
+
+/*
+====================================================
+ TOCAR VISOR
+====================================================
+*/
+
+arrowCanvas.addEventListener(
+  "click",
+  function(event){
+
+    if(!colocandoFlecha){
+
+      return;
+
+    }
+
+
+    const rect =
+      arrowCanvas.getBoundingClientRect();
+
+
+    const escalaX =
+      arrowCanvas.width /
+      rect.width;
+
+
+    const escalaY =
+      arrowCanvas.height /
+      rect.height;
+
+
+    const x =
+      (
+        event.clientX -
+        rect.left
+      ) *
+      escalaX;
+
+
+    const y =
+      (
+        event.clientY -
+        rect.top
+      ) *
+      escalaY;
+
+
+    /*
+    ================================================
+     VERIFICAR ESTAMPADO
+    ================================================
+    */
+
+    if(
+      puntoEstaEnEstampado(
+        x,
+        y
+      )
+    ){
+
+      alert(
+        "La flecha no puede colocarse sobre el estampado.\n\nSelecciona otra ubicación."
+      );
+
+      return;
+
+    }
+
+
+    flechaX =
+      x;
+
+
+    flechaY =
+      y;
+
+
+    dibujarFlecha();
+
+  }
+);
+
+
+/*
+====================================================
+ VERIFICAR ESTAMPADO
+====================================================
+*/
+
+function puntoEstaEnEstampado(
+  x,
+  y
+){
+
+  const width =
+    arrowCanvas.width;
+
+
+  const height =
+    arrowCanvas.height;
+
+
+  const escala =
+    Math.max(
+      width,
+      height
+    ) / 1200;
+
+
+  const padding =
+    Math.round(
+      16 * escala
+    );
+
+
+  const font =
+    Math.max(
+      16,
+      Math.round(
+        20 * escala
+      )
+    );
+
+
+  const altoLinea =
+    Math.round(
+      27 * escala
+    );
+
+
+  const lineas = [
+
+    "PROYECTO: " +
+      (
+        proyecto ||
+        "SIN PROYECTO"
+      ),
+
+    "TIPO PROYECTO: " +
+      (
+        tipoProyecto ||
+        "SIN TIPO"
+      ),
+
+    "TIPO FOTO: " +
+      obtenerNombreTipoFoto(tipo),
+
+    "FECHA / HORA",
+
+    "LAT / LON"
+
+  ];
+
+
+  const ctx =
+    arrowCanvas.getContext(
+      "2d"
+    );
+
+
+  ctx.font =
+    "bold " +
+    font +
+    "px Arial";
+
+
+  let anchoTexto =
+    0;
+
+
+  lineas.forEach(
+    function(texto){
+
+      const medida =
+        ctx.measureText(
+          texto
+        ).width;
+
+
+      if(
+        medida >
+        anchoTexto
+      ){
+
+        anchoTexto =
+          medida;
+
+      }
+
+    }
+  );
+
+
+  const anchoCaja =
+    anchoTexto +
+    padding * 2;
+
+
+  const altoCaja =
+    lineas.length *
+      altoLinea +
+    padding * 2;
+
+
+  const cajaX =
+    padding;
+
+
+  const cajaY =
+    height -
+    altoCaja -
+    padding;
+
+
+  /*
+  ================================================
+   MARGEN EXTRA PARA EVITAR QUE LA FLECHA
+   TOQUE EL ESTAMPADO
+  ================================================
+  */
+
+  const margen =
+    25 * escala;
+
+
+  return (
+
+    x >=
+      cajaX - margen &&
+
+    x <=
+      cajaX +
+      anchoCaja +
+      margen &&
+
+    y >=
+      cajaY - margen &&
+
+    y <=
+      cajaY +
+      altoCaja +
+      margen
+
+  );
+
+}
+
+
+/*
+====================================================
+ DIBUJAR FLECHA
+====================================================
+*/
+
+function dibujarFlecha(){
+
+  const imagen =
+    new Image();
+
+
+  imagen.onload =
+    function(){
+
+      const ctx =
+        arrowCanvas.getContext(
+          "2d"
+        );
+
+
+      ctx.clearRect(
+        0,
+        0,
+        arrowCanvas.width,
+        arrowCanvas.height
+      );
+
+
+      ctx.drawImage(
+        imagen,
+        0,
+        0
+      );
+
+
+      const escala =
+        Math.max(
+          arrowCanvas.width,
+          arrowCanvas.height
+        ) / 1200;
+
+
+      /*
+      ==============================================
+       LONGITUD DE FLECHA
+      ==============================================
+      */
+
+      const longitud =
+        150 * escala;
+
+
+      /*
+      ==============================================
+       PUNTA DE FLECHA
+      ==============================================
+      */
+
+      const punta =
+        32 * escala;
+
+
+      /*
+      ==============================================
+       LA FLECHA APUNTA AL PUNTO SELECCIONADO
+       DESDE ARRIBA/IZQUIERDA
+      ==============================================
+      */
+
+      const inicioX =
+        flechaX -
+        longitud;
+
+
+      const inicioY =
+        flechaY -
+        longitud;
+
+
+      /*
+      ==============================================
+       LINEA ROJA
+      ==============================================
+      */
+
+      ctx.beginPath();
+
+
+      ctx.moveTo(
+        inicioX,
+        inicioY
+      );
+
+
+      ctx.lineTo(
+        flechaX,
+        flechaY
+      );
+
+
+      ctx.strokeStyle =
+        "#ff0000";
+
+
+      ctx.lineWidth =
+        Math.max(
+          8,
+          9 * escala
+        );
+
+
+      ctx.lineCap =
+        "round";
+
+
+      ctx.stroke();
+
+
+      /*
+      ==============================================
+       BORDE BLANCO
+      ==============================================
+      */
+
+      ctx.beginPath();
+
+
+      ctx.moveTo(
+        inicioX,
+        inicioY
+      );
+
+
+      ctx.lineTo(
+        flechaX,
+        flechaY
+      );
+
+
+      ctx.strokeStyle =
+        "rgba(255,255,255,.8)";
+
+
+      ctx.lineWidth =
+        Math.max(
+          2,
+          3 * escala
+        );
+
+
+      ctx.stroke();
+
+
+      /*
+      ==============================================
+       CABEZA DE LA FLECHA
+      ==============================================
+      */
+
+      const angulo =
+        Math.atan2(
+          flechaY - inicioY,
+          flechaX - inicioX
+        );
+
+
+      ctx.beginPath();
+
+
+      ctx.moveTo(
+        flechaX,
+        flechaY
+      );
+
+
+      ctx.lineTo(
+
+        flechaX -
+        punta *
+        Math.cos(
+          angulo - Math.PI / 6
+        ),
+
+        flechaY -
+        punta *
+        Math.sin(
+          angulo - Math.PI / 6
+        )
+
+      );
+
+
+      ctx.lineTo(
+
+        flechaX -
+        punta *
+        Math.cos(
+          angulo + Math.PI / 6
+        ),
+
+        flechaY -
+        punta *
+        Math.sin(
+          angulo + Math.PI / 6
+        )
+
+      );
+
+
+      ctx.closePath();
+
+
+      ctx.fillStyle =
+        "#ff0000";
+
+
+      ctx.fill();
+
+
+      /*
+      ==============================================
+       PUNTO CENTRAL
+      ==============================================
+      */
+
+      ctx.beginPath();
+
+
+      ctx.arc(
+
+        flechaX,
+
+        flechaY,
+
+        10 * escala,
+
+        0,
+
+        Math.PI * 2
+
+      );
+
+
+      ctx.fillStyle =
+        "#ffff00";
+
+
+      ctx.fill();
+
+
+      ctx.strokeStyle =
+        "#000000";
+
+
+      ctx.lineWidth =
+        3 * escala;
+
+
+      ctx.stroke();
+
+    };
+
+
+  imagen.src =
+    fotoBase;
+
+}
+
+
+/*
+====================================================
+ CANCELAR SEÑAL
+====================================================
+*/
+
+cancelSignalButton.addEventListener(
+  "click",
+  function(){
+
+    colocandoFlecha =
+      false;
+
+
+    flechaX =
+      null;
+
+
+    flechaY =
+      null;
+
+
+    fotoBase =
+      null;
+
+
+    arrowEditor.style.display =
+      "none";
+
+
+    video.style.display =
+      "block";
+
+
+    confirmButton.style.display =
+      "none";
+
+
+    cancelSignalButton.style.display =
+      "none";
+
+
+    signalButton.style.display =
+      "block";
+
+
+    takeButton.style.display =
+      "block";
+
+
+    cancelButton.style.display =
+      "block";
+
+
+    desactivarSenalar();
+
+
+    status.textContent =
+      "Se canceló el señalamiento.\n\n" +
+      "Puedes tomar otra fotografía.";
+
+  }
+);
+
+
+/*
+====================================================
+ CONFIRMAR FOTO CON FLECHA
+====================================================
+*/
+
+confirmButton.addEventListener(
+  "click",
+  function(){
+
+    if(
+      !fotoBase
+    ){
+
+      return;
+
+    }
+
+
+    if(
+      flechaX === null ||
+      flechaY === null
+    ){
+
+      alert(
+        "Primero toca la imagen para colocar la flecha."
+      );
+
+      return;
+
+    }
+
+
+    /*
+    ================================================
+     OBTENER FOTO FINAL
+    ================================================
+    */
+
+    const dataURL =
+      arrowCanvas.toDataURL(
+        "image/jpeg",
+        0.90
+      );
+
+
+    const ahora =
+      new Date();
+
+
+    /*
+    ================================================
+     ENVIAR
+    ================================================
+    */
+
+    enviarFotoFinal(
+      dataURL,
+      ahora,
+      gpsActual
+    );
+
+  }
+);
+
+
+/*
+====================================================
+ ENVIAR FOTO FINAL
+====================================================
+*/
+
+function enviarFotoFinal(
+  dataURL,
+  ahora,
+  posicion
+){
+
+  /*
+  ================================================
+   PREVIEW
+  ================================================
+  */
+
+  preview.src =
+    dataURL;
+
+
+  preview.style.display =
+    "block";
+
+
+  /*
+  ================================================
+   NOMBRE
+  ================================================
+  */
+
+  const nombre =
+    crearNombreFoto(
+      tipo,
+      ahora
+    );
+
+
+  /*
+  ================================================
+   MENSAJE
+  ================================================
+  */
+
+  const mensaje = {
+
+    type:
+      "CAMERA_STAMP_PHOTO",
+
+    tipo:
+      tipo,
+
+    fileName:
+      nombre,
+
+    mimeType:
+      "image/jpeg",
+
+    data:
+      dataURL,
+
+    latitud:
+      posicion
+        ? posicion.lat
+        : null,
+
+    longitud:
+      posicion
+        ? posicion.lng
+        : null
+
+  };
+
+
+  /*
+  ================================================
+   ENVIAR AL FORMULARIO
+  ================================================
+  */
+
+  if(
+    window.opener &&
+    !window.opener.closed
+  ){
+
+    window.opener.postMessage(
+      mensaje,
+      "*"
+    );
+
+  }
+
+
+  /*
+  ================================================
+   MENSAJE
+  ================================================
+  */
+
+  status.textContent =
+    "✅ FOTO CAPTURADA.\n\n" +
+    "Regresando al formulario...";
+
+
+  /*
+  ================================================
+   CERRAR
+  ================================================
+  */
+
+  detenerCamara();
+
+
+  setTimeout(
+    function(){
+
+      if(
+        window.opener &&
+        !window.opener.closed
+      ){
+
+        window.opener.focus();
+
+        window.close();
+
+      }
+      else{
+
+        status.textContent =
+          "✅ FOTO CAPTURADA.\n\n" +
+          "Puedes regresar manualmente al formulario.";
+
+      }
+
+    },
+    500
+  );
+
+}
+
 
 /*
 ====================================================
@@ -1124,6 +2158,7 @@ function obtenerGPS(){
 
 }
 
+
 /*
 ====================================================
  NOMBRE TIPO FOTO
@@ -1135,14 +2170,18 @@ function obtenerNombreTipoFoto(tipo){
   if(tipo === "poste")
     return "POSTE";
 
+
   if(tipo === "mega")
     return "CAJAS MEGA";
+
 
   if(tipo === "medidores")
     return "MEDIDORES";
 
+
   if(tipo === "carriers")
     return "CAJAS CARRIERS";
+
 
   return String(
     tipo || ""
@@ -1163,12 +2202,18 @@ function crearNombreFoto(
 ){
 
   return (
+
     "STAMPED_" +
+
     obtenerNombreTipoFoto(tipo)
       .replace(/\s+/g,"_") +
+
     "_" +
+
     formatFileDate(fecha) +
+
     ".jpg"
+
   );
 
 }
@@ -1185,33 +2230,54 @@ function formatFileDate(date){
   const year =
     date.getFullYear();
 
+
   const month =
     String(
       date.getMonth() + 1
-    ).padStart(2,"0");
+    ).padStart(
+      2,
+      "0"
+    );
+
 
   const day =
     String(
       date.getDate()
-    ).padStart(2,"0");
+    ).padStart(
+      2,
+      "0"
+    );
+
 
   const hour =
     String(
       date.getHours()
-    ).padStart(2,"0");
+    ).padStart(
+      2,
+      "0"
+    );
+
 
   const minute =
     String(
       date.getMinutes()
-    ).padStart(2,"0");
+    ).padStart(
+      2,
+      "0"
+    );
+
 
   const second =
     String(
       date.getSeconds()
-    ).padStart(2,"0");
+    ).padStart(
+      2,
+      "0"
+    );
 
 
   return (
+
     year +
     month +
     day +
@@ -1219,6 +2285,7 @@ function formatFileDate(date){
     hour +
     minute +
     second
+
   );
 
 }
@@ -1286,9 +2353,12 @@ function detenerCamara(){
 
 }
 
-/*====================================================
+
+/*
+====================================================
  INICIAR CÁMARA AUTOMÁTICAMENTE
-====================================================*/
+====================================================
+*/
 
 window.addEventListener(
   "load",
@@ -1299,23 +2369,19 @@ window.addEventListener(
     );
 
 
-    /*
-     * Ocultar START mientras intentamos
-     */
-
     startButton.style.display =
       "none";
 
 
-    /*
-     * Intentar iniciar cámara
-     */
+    signalButton.style.display =
+      "block";
+
 
     iniciarCamara();
 
   }
 );
-  
+
 </script>
 
 </body>
