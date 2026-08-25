@@ -1291,19 +1291,21 @@ arrowCanvas.addEventListener(
 
 
     if(
-      puntoEstaEnEstampado(
-        punto.x,
-        punto.y
-      )
-    ){
+  flechaInvadeEstampado(
+    punto.x,
+    punto.y
+  )
+){
 
-      alert(
-        "La flecha no puede colocarse sobre el estampado."
-      );
+  alert(
+    "⚠️ LA FLECHA NO PUEDE TOCAR EL ESTAMPADO.\n\n" +
+    "Selecciona una ubicación más alejada,NSP."
+  );
 
-      return;
+  return;
 
-    }
+}
+
 
 
     flechaX =
