@@ -143,23 +143,23 @@ body{
   align-items:center;
   justify-content:center;
 
-  gap:8px;
+  gap:10px;
 
-  padding:10px;
+  padding:12px;
 
   padding-bottom:
     calc(
-      10px +
+      12px +
       env(safe-area-inset-bottom)
     );
 
   background:
     linear-gradient(
       transparent,
-      rgba(0,0,0,.95)
+      rgba(0,0,0,.92)
     );
 
-  z-index:1000;
+  z-index:100;
 
 }
 
@@ -179,7 +179,7 @@ body{
   min-height:52px;
 
   padding:
-    12px 14px;
+    12px 16px;
 
   font-size:15px;
 
@@ -196,7 +196,9 @@ body{
 }
 
 
-/* COLORES */
+/*==================================================
+ COLORES
+==================================================*/
 
 #startButton {
   background:#2196f3;
@@ -238,9 +240,9 @@ body{
 }
 
 
-/*==================================================
+/*====================================================
  PREVIEW
-==================================================*/
+====================================================*/
 
 #preview{
 
@@ -255,9 +257,9 @@ body{
 }
 
 
-/*==================================================
+/*====================================================
  STATUS
-==================================================*/
+====================================================*/
 
 #status{
 
@@ -266,9 +268,9 @@ body{
 }
 
 
-/*==================================================
+/*====================================================
  CELULAR
-==================================================*/
+====================================================*/
 
 @media(max-width:600px){
 
@@ -331,20 +333,21 @@ body{
   }
 
 
-  /*================================================
+  /*==============================================
    CONTROLES CELULAR
-  =================================================*/
+  ==============================================*/
 
   #cameraControls {
 
     position:absolute;
 
     left:0;
+
     right:0;
 
     bottom:0;
 
-    z-index:1000;
+    z-index:100;
 
     display:flex;
 
@@ -352,12 +355,11 @@ body{
 
     justify-content:center;
 
-    gap:7px;
+    gap:8px;
 
     padding:
-
       10px
-      6px
+      8px
       calc(
         10px +
         env(safe-area-inset-bottom)
@@ -372,116 +374,25 @@ body{
   }
 
 
-  /*================================================
-   BOTONES CELULAR MÁS GRANDES
-  =================================================*/
+  #cameraControls button {
 
-  #cameraControls button{
+    min-width:90px;
 
-    min-width:105px;
-
-    min-height:54px;
+    min-height:52px;
 
     padding:
-
-      11px
-      10px;
+      11px 12px;
 
     font-size:14px;
 
     font-weight:bold;
 
-    border-radius:9px;
-
-    flex:0 1 auto;
-
-    display:block;
+    border-radius:8px;
 
   }
 
 }
 
-
-/*====================================================
- ESTILOS BOTONES
-====================================================*/
-
-#startButton{
-
-  background:#2196f3;
-
-  color:#fff;
-
-}
-
-
-#takeButton{
-
-  background:#4caf50;
-
-  color:#fff;
-
-}
-
-
-#signalButton{
-
-  background:#ff9800;
-
-  color:#fff;
-
-}
-
-
-#signalButton.active{
-
-  background:#e65100;
-
-  color:#fff;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(255,152,0,.35);
-
-}
-
-
-#confirmButton{
-
-  background:#4caf50;
-
-  color:#fff;
-
-  display:none;
-
-}
-
-
-#cancelSignalButton{
-
-  background:#f44336;
-
-  color:#fff;
-
-  display:none;
-
-}
-
-
-#cancelButton{
-
-  background:#f44336;
-
-  color:#fff;
-
-}
-
-
-#cameraControls button:disabled{
-
-  opacity:.4;
-
-}
 
 </style>
 
@@ -1478,6 +1389,12 @@ function dibujarLogoEnCanvas(
 
   ctx.restore();
 
+
+  console.log(
+    "ZONA LOGO BLOQUEADA:",
+    zonaLogo
+  );
+
 }
 
 
@@ -1529,20 +1446,26 @@ function abrirVisorFlecha(){
       arrowEditor.style.display =
         "block";
 
+
       video.style.display =
         "none";
+
 
       signalButton.style.display =
         "none";
 
+
       takeButton.style.display =
         "none";
+
 
       confirmButton.style.display =
         "block";
 
+
       cancelSignalButton.style.display =
         "block";
+
 
       cancelButton.style.display =
         "none";
@@ -1993,6 +1916,20 @@ arrowCanvas.addEventListener(
         obtenerPuntoEvento(
           touches[1]
         );
+
+
+      const centroX =
+        (
+          p1.x +
+          p2.x
+        ) / 2;
+
+
+      const centroY =
+        (
+          p1.y +
+          p2.y
+        ) / 2;
 
 
       const distancia =
@@ -2457,6 +2394,8 @@ function dibujarFlecha(){
         );
 
 
+      /* BORDE NEGRO */
+
       ctx.beginPath();
 
 
@@ -2492,6 +2431,8 @@ function dibujarFlecha(){
       ctx.stroke();
 
 
+      /* FLECHA VERDE */
+
       ctx.beginPath();
 
 
@@ -2526,6 +2467,8 @@ function dibujarFlecha(){
 
       ctx.stroke();
 
+
+      /* CABEZA */
 
       const angulo =
         Math.atan2(
@@ -2598,6 +2541,8 @@ function dibujarFlecha(){
 
       ctx.fill();
 
+
+      /* BORDE DE LA CABEZA */
 
       ctx.strokeStyle =
         "#000000";
