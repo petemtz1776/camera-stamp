@@ -143,28 +143,30 @@ body{
   align-items:center;
   justify-content:center;
 
-  gap:6px;
+  gap:8px;
 
-  padding:8px;
+  padding:10px;
 
   padding-bottom:
     calc(
-      8px +
+      10px +
       env(safe-area-inset-bottom)
     );
 
   background:
     linear-gradient(
       transparent,
-      rgba(0,0,0,.90)
+      rgba(0,0,0,.95)
     );
 
-  z-index:100;
+  z-index:1000;
 
 }
 
 
-/* BOTONES */
+/*==================================================
+ BOTONES GRANDES
+==================================================*/
 
 #cameraControls button {
 
@@ -172,20 +174,20 @@ body{
 
   width:auto;
 
-  min-width:0;
+  min-width:100px;
 
-  min-height:42px;
+  min-height:52px;
 
   padding:
-    8px 10px;
+    12px 14px;
 
-  font-size:12px;
+  font-size:15px;
 
   font-weight:bold;
 
   border:none;
 
-  border-radius:7px;
+  border-radius:9px;
 
   cursor:pointer;
 
@@ -237,6 +239,34 @@ body{
 
 
 /*==================================================
+ PREVIEW
+==================================================*/
+
+#preview{
+
+  width:100%;
+
+  max-width:800px;
+
+  display:none;
+
+  margin:auto;
+
+}
+
+
+/*==================================================
+ STATUS
+==================================================*/
+
+#status{
+
+  display:none;
+
+}
+
+
+/*==================================================
  CELULAR
 ==================================================*/
 
@@ -251,26 +281,31 @@ body{
   #cameraContainer {
 
     width:100vw;
+
     height:100vh;
 
     max-width:none;
 
     border-radius:0;
+
   }
 
 
   #video {
 
     width:100vw;
+
     height:100vh;
 
     object-fit:cover;
+
   }
 
 
   #arrowEditor {
 
     width:100%;
+
     height:100%;
 
     position:absolute;
@@ -279,59 +314,88 @@ body{
     top:0;
     right:0;
     bottom:0;
+
   }
 
 
   #arrowCanvas {
 
     width:100%;
+
     height:100%;
 
     object-fit:contain;
 
     touch-action:none;
+
   }
 
 
-  /*==================================================
-    BOTONES GRANDES PARA CELULAR
-  ==================================================*/
+  /*================================================
+   CONTROLES CELULAR
+  =================================================*/
 
   #cameraControls {
+
+    position:absolute;
 
     left:0;
     right:0;
 
-    bottom:50px;
+    bottom:0;
 
-    z-index:100;
+    z-index:1000;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:7px;
 
     padding:
+
       10px
-      8px
+      6px
       calc(
         10px +
         env(safe-area-inset-bottom)
       );
 
-    gap:8px;
-
-    justify-content:center;
+    background:
+      linear-gradient(
+        transparent,
+        rgba(0,0,0,.95)
+      );
 
   }
 
 
+  /*================================================
+   BOTONES CELULAR MÁS GRANDES
+  =================================================*/
+
   #cameraControls button{
 
-    min-height:52px;
+    min-width:105px;
+
+    min-height:54px;
 
     padding:
-      10px
-      14px;
 
-    font-size:15px;
+      11px
+      10px;
 
-    border-radius:8px;
+    font-size:14px;
+
+    font-weight:bold;
+
+    border-radius:9px;
+
+    flex:0 1 auto;
+
+    display:block;
 
   }
 
@@ -339,7 +403,7 @@ body{
 
 
 /*====================================================
- BOTONES
+ ESTILOS BOTONES
 ====================================================*/
 
 #startButton{
@@ -372,6 +436,8 @@ body{
 #signalButton.active{
 
   background:#e65100;
+
+  color:#fff;
 
   box-shadow:
     0 0 0 3px
@@ -414,120 +480,6 @@ body{
 #cameraControls button:disabled{
 
   opacity:.4;
-
-}
-
-
-/*====================================================
- PREVIEW
-====================================================*/
-
-#preview{
-
-  width:100%;
-
-  max-width:800px;
-
-  display:none;
-
-  margin:auto;
-
-}
-
-
-/*====================================================
- STATUS
-====================================================*/
-
-#status{
-
-  display:none;
-
-}
-
-
-/*====================================================
- CELULAR
-====================================================*/
-
-@media(max-width:600px){
-
-  #cameraContainer{
-
-    width:100vw;
-
-    height:100vh;
-
-    max-width:none;
-
-  }
-
-
-  #video{
-
-    width:100vw;
-
-    height:100vh;
-
-    object-fit:cover;
-
-  }
-
-
-  #arrowEditor{
-
-    width:100vw;
-
-    height:100vh;
-
-  }
-
-
-  #arrowCanvas{
-
-    width:100vw;
-
-    height:100vh;
-
-  }
-
-
-  #cameraControls {
-
-    bottom:50px;
-
-    padding:
-      10px
-      8px
-      calc(
-        10px +
-        env(safe-area-inset-bottom)
-      );
-
-    gap:8px;
-
-    justify-content:center;
-
-  }
-
-
-  /*
-   * BOTONES MÁS GRANDES
-   */
-
-  #cameraControls button{
-
-    min-height:52px;
-
-    padding:
-      10px
-      14px;
-
-    font-size:15px;
-
-    border-radius:8px;
-
-  }
 
 }
 
@@ -649,12 +601,6 @@ const rama =
  LOGO
 ====================================================*/
 
-/*
- * GOOGLE DRIVE
- *
- * Este es el archivo que proporcionaste.
- */
-
 const LOGO_DRIVE_ID =
   "12EpwDn_A9mR0DfZSiGoTi2NS9zFNYPVP";
 
@@ -663,12 +609,6 @@ const LOGO_URL =
   "https://lh3.googleusercontent.com/d/" +
   LOGO_DRIVE_ID;
 
-
-/*
- * Si Google cambia el formato del enlace,
- * esta función intenta cargarlo también
- * mediante el enlace uc.
- */
 
 const LOGO_URL_ALTERNATIVO =
   "https://drive.google.com/uc?export=view&id=" +
@@ -739,59 +679,19 @@ const arrowCanvas =
 
 let stream = null;
 
-
-/*
- * Modo señalar
- */
-
 let modoSenalar = false;
-
-
-/*
- * Foto base
- */
 
 let fotoBase = null;
 
-
-/*
- * GPS
- */
-
 let gpsActual = null;
-
-
-/*
- * Fecha de fotografía
- */
 
 let fechaFoto = null;
 
-
-/*
- * Imagen del logo
- */
-
 let logoImagen = null;
-
-
-/*
- * Indica si el logo está listo
- */
 
 let logoListo = false;
 
-
-/*
- * Zona bloqueada del logo
- */
-
 let zonaLogo = null;
-
-
-/*
- * Zona bloqueada del estampado
- */
 
 let zonaEstampado = null;
 
@@ -804,38 +704,13 @@ let flechaX = null;
 
 let flechaY = null;
 
-
-/*
- * Ángulo en radianes
- */
-
 let flechaAngulo = 0;
-
-
-/*
- * Tamaño
- */
 
 let flechaEscala = 1;
 
-
-/*
- * Estado de toque
- */
-
 let gestoActivo = false;
 
-
-/*
- * Datos del gesto
- */
-
 let toqueInicial = null;
-
-
-/*
- * Para distinguir click de touch
- */
 
 let ultimoToque = 0;
 
@@ -916,10 +791,6 @@ async function iniciarCamara(){
       false;
 
 
-    /*
-     * Cargar logo inmediatamente
-     */
-
     cargarLogo();
 
 
@@ -970,10 +841,6 @@ function cargarLogo(){
     new Image();
 
 
-  /*
-   * Permitir cargar imagen externa
-   */
-
   logoImagen.crossOrigin =
     "anonymous";
 
@@ -1005,10 +872,6 @@ function cargarLogo(){
         "No se pudo cargar logo principal."
       );
 
-
-      /*
-       * Segundo intento
-       */
 
       const alternativa =
         new Image();
@@ -1162,10 +1025,6 @@ async function tomarFoto(){
     }
 
 
-    /*
-     * GPS
-     */
-
     status.textContent =
       "Obteniendo ubicación GPS...";
 
@@ -1177,10 +1036,6 @@ async function tomarFoto(){
     gpsActual =
       posicion;
 
-
-    /*
-     * Canvas
-     */
 
     canvas.width =
       width;
@@ -1203,10 +1058,6 @@ async function tomarFoto(){
     );
 
 
-    /*
-     * Fecha
-     */
-
     const ahora =
       new Date();
 
@@ -1226,10 +1077,6 @@ async function tomarFoto(){
         "es-MX"
       );
 
-
-    /*
-     * Escala
-     */
 
     const escala =
       Math.max(
@@ -1258,10 +1105,6 @@ async function tomarFoto(){
         27 * escala
       );
 
-
-    /*
-     * Texto
-     */
 
     const lineas = [
 
@@ -1301,10 +1144,6 @@ async function tomarFoto(){
 
     ];
 
-
-    /*
-     * Medir estampado
-     */
 
     ctx.font =
       "bold " +
@@ -1360,13 +1199,6 @@ async function tomarFoto(){
       padding;
 
 
-    /*
-     * Guardar zona del estampado
-     *
-     * Se agrega margen para que la flecha
-     * tampoco pueda rozarlo.
-     */
-
     const margenEstampado =
       Math.max(
         15,
@@ -1397,10 +1229,6 @@ async function tomarFoto(){
     };
 
 
-    /*
-     * Caja negra
-     */
-
     ctx.fillStyle =
       "rgba(0,0,0,.42)";
 
@@ -1425,10 +1253,6 @@ async function tomarFoto(){
 
     ctx.fill();
 
-
-    /*
-     * Texto
-     */
 
     ctx.fillStyle =
       "rgba(255,255,255,.95)";
@@ -1464,14 +1288,6 @@ async function tomarFoto(){
     );
 
 
-    /*
-     * LOGO
-     *
-     * IMPORTANTE:
-     * se dibuja aquí ANTES de crear
-     * fotoBase.
-     */
-
     dibujarLogoEnCanvas(
       ctx,
       width,
@@ -1479,21 +1295,12 @@ async function tomarFoto(){
     );
 
 
-    /*
-     * Guardar foto base
-     */
-
     fotoBase =
       canvas.toDataURL(
         "image/jpeg",
         0.90
       );
 
-
-    /*
-     * Si no se señaló,
-     * guardar inmediatamente.
-     */
 
     if(!modoSenalar){
 
@@ -1507,10 +1314,6 @@ async function tomarFoto(){
 
     }
 
-
-    /*
-     * Abrir visor
-     */
 
     abrirVisorFlecha();
 
@@ -1542,10 +1345,6 @@ function dibujarLogoEnCanvas(
   height
 ){
 
-  /*
-   * Si no cargó, no dibujamos.
-   */
-
   if(
     !logoListo ||
     !logoImagen
@@ -1558,12 +1357,6 @@ function dibujarLogoEnCanvas(
 
   }
 
-
-  /*
-   * Tamaño máximo del logo.
-   *
-   * Se calcula respecto a la foto.
-   */
 
   const maxWidth =
     width * 0.18;
@@ -1595,10 +1388,6 @@ function dibujarLogoEnCanvas(
     proporcion;
 
 
-  /*
-   * Margen
-   */
-
   const margen =
     Math.max(
       20,
@@ -1607,10 +1396,6 @@ function dibujarLogoEnCanvas(
       )
     );
 
-
-  /*
-   * ESQUINA SUPERIOR DERECHA
-   */
 
   const logoX =
     width -
@@ -1621,12 +1406,6 @@ function dibujarLogoEnCanvas(
   const logoY =
     margen;
 
-
-  /*
-   * Zona bloqueada.
-   *
-   * Agregamos margen adicional.
-   */
 
   const bloqueo =
     Math.max(
@@ -1658,12 +1437,6 @@ function dibujarLogoEnCanvas(
   };
 
 
-  /*
-   * Fondo semitransparente
-   * opcional para que el logo
-   * se vea mejor.
-   */
-
   ctx.save();
 
 
@@ -1688,10 +1461,6 @@ function dibujarLogoEnCanvas(
   );
 
 
-  /*
-   * Logo
-   */
-
   ctx.drawImage(
 
     logoImagen,
@@ -1708,12 +1477,6 @@ function dibujarLogoEnCanvas(
 
 
   ctx.restore();
-
-
-  console.log(
-    "ZONA LOGO BLOQUEADA:",
-    zonaLogo
-  );
 
 }
 
@@ -1785,10 +1548,6 @@ function abrirVisorFlecha(){
         "none";
 
 
-      /*
-       * Reiniciar flecha
-       */
-
       flechaX =
         null;
 
@@ -1810,12 +1569,12 @@ function abrirVisorFlecha(){
 
 
       status.textContent =
-        "🎯 TOCA LA FOTO PARA COLOCAR LA FLECHA.PP\n\n" +
+        "🎯 TOCA LA FOTO PARA COLOCAR LA FLECHA.\n\n" +
 
         "Puedes moverla con un dedo y " +
-        "girarla o cambiar su tamaño con dos dedosETA.\n\n" +
+        "girarla o cambiar su tamaño con dos dedos.\n\n" +
 
-        "🚫 El estampado y el logo están bloqueadosPP.";
+        "🚫 El estampado y el logo están bloqueados.";
 
     };
 
@@ -1894,10 +1653,6 @@ arrowCanvas.addEventListener(
       );
 
 
-    /*
-     * Primera colocación
-     */
-
     if(
       flechaX === null ||
       flechaY === null
@@ -1964,10 +1719,6 @@ arrowCanvas.addEventListener(
       event.touches;
 
 
-    /*
-     * Un dedo
-     */
-
     if(
       touches.length === 1
     ){
@@ -1977,11 +1728,6 @@ arrowCanvas.addEventListener(
           touches[0]
         );
 
-
-      /*
-       * Si todavía no existe,
-       * colocar flecha.
-       */
 
       if(
         flechaX === null
@@ -2051,10 +1797,6 @@ arrowCanvas.addEventListener(
 
     }
 
-
-    /*
-     * Dos dedos
-     */
 
     else if(
       touches.length === 2 &&
@@ -2180,10 +1922,6 @@ arrowCanvas.addEventListener(
       event.touches;
 
 
-    /*
-     * MOVER CON UN DEDO
-     */
-
     if(
       touches.length === 1 &&
       toqueInicial.tipo === "move"
@@ -2215,11 +1953,6 @@ arrowCanvas.addEventListener(
         dy;
 
 
-      /*
-       * No permitir entrar
-       * en logo/estampado.
-       */
-
       if(
         !flechaChocaConZonas(
           nuevoX,
@@ -2244,10 +1977,6 @@ arrowCanvas.addEventListener(
     }
 
 
-    /*
-     * GIRAR + ESCALAR CON DOS DEDOS
-     */
-
     else if(
       touches.length === 2 &&
       toqueInicial.tipo ===
@@ -2264,20 +1993,6 @@ arrowCanvas.addEventListener(
         obtenerPuntoEvento(
           touches[1]
         );
-
-
-      const centroX =
-        (
-          p1.x +
-          p2.x
-        ) / 2;
-
-
-      const centroY =
-        (
-          p1.y +
-          p2.y
-        ) / 2;
 
 
       const distancia =
@@ -2304,10 +2019,6 @@ arrowCanvas.addEventListener(
         );
 
 
-      /*
-       * Escala
-       */
-
       let nuevaEscala =
         toqueInicial.escala *
         (
@@ -2315,10 +2026,6 @@ arrowCanvas.addEventListener(
           toqueInicial.distancia
         );
 
-
-      /*
-       * Limites de tamaño
-       */
 
       nuevaEscala =
         Math.max(
@@ -2330,10 +2037,6 @@ arrowCanvas.addEventListener(
         );
 
 
-      /*
-       * Rotación
-       */
-
       const nuevaRotacion =
         toqueInicial.rotacion +
         (
@@ -2341,10 +2044,6 @@ arrowCanvas.addEventListener(
           toqueInicial.angulo
         );
 
-
-      /*
-       * Comprobar toda la flecha.
-       */
 
       if(
         !flechaChocaConZonas(
@@ -2411,25 +2110,12 @@ arrowCanvas.addEventListener(
  COMPROBAR ZONAS PROHIBIDAS
 ====================================================*/
 
-/*
- * Esta es la parte importante.
- *
- * No comprobamos solamente la punta.
- *
- * Comprobamos varios puntos alrededor
- * de TODA la flecha.
- */
-
 function flechaChocaConZonas(
   x,
   y,
   angulo,
   escala
 ){
-
-  /*
-   * Dimensiones base
-   */
 
   const factor =
     Math.max(
@@ -2453,11 +2139,6 @@ function flechaChocaConZonas(
     );
 
 
-  /*
-   * La flecha va desde
-   * un punto inicial hasta la punta.
-   */
-
   const inicioX =
     x -
     longitud *
@@ -2475,11 +2156,6 @@ function flechaChocaConZonas(
       Math.PI / 4
     );
 
-
-  /*
-   * Revisar muchos puntos
-   * a lo largo del cuerpo.
-   */
 
   const pasos =
     18;
@@ -2512,11 +2188,6 @@ function flechaChocaConZonas(
       ) *
       t;
 
-
-    /*
-     * Revisar alrededor
-     * del cuerpo.
-     */
 
     const margen =
       grosor *
@@ -2587,10 +2258,6 @@ function flechaChocaConZonas(
   }
 
 
-  /*
-   * Revisar también la cabeza
-   */
-
   const punta =
     32 *
     factor *
@@ -2600,52 +2267,28 @@ function flechaChocaConZonas(
   const cabezaPuntos = [
 
     {
-      x:
-        x,
-
-      y:
-        y
-
+      x:x,
+      y:y
     },
 
     {
-      x:
-        x +
-        punta,
-
-      y:
-        y
-
+      x:x + punta,
+      y:y
     },
 
     {
-      x:
-        x -
-        punta,
-
-      y:
-        y
-
+      x:x - punta,
+      y:y
     },
 
     {
-      x:
-        x,
-
-      y:
-        y +
-        punta
-
+      x:x,
+      y:y + punta
     },
 
     {
-      x:
-        x,
-
-      y:
-        y -
-        punta
-
+      x:x,
+      y:y - punta
     }
 
   ];
@@ -2814,10 +2457,6 @@ function dibujarFlecha(){
         );
 
 
-      /*
-       * BORDE NEGRO
-       */
-
       ctx.beginPath();
 
 
@@ -2853,10 +2492,6 @@ function dibujarFlecha(){
       ctx.stroke();
 
 
-      /*
-       * FLECHA VERDE
-       */
-
       ctx.beginPath();
 
 
@@ -2891,10 +2526,6 @@ function dibujarFlecha(){
 
       ctx.stroke();
 
-
-      /*
-       * CABEZA
-       */
 
       const angulo =
         Math.atan2(
@@ -2967,10 +2598,6 @@ function dibujarFlecha(){
 
       ctx.fill();
 
-
-      /*
-       * BORDE DE LA CABEZA
-       */
 
       ctx.strokeStyle =
         "#000000";
@@ -3099,13 +2726,6 @@ confirmButton.addEventListener(
 
     }
 
-
-    /*
-     * Comprobación final.
-     *
-     * Por seguridad volvemos a revisar
-     * antes de guardar.
-     */
 
     if(
       flechaChocaConZonas(
@@ -3532,10 +3152,6 @@ window.addEventListener(
     signalButton.style.display =
       "block";
 
-
-    /*
-     * Intentar cargar logo desde el principio
-     */
 
     cargarLogo();
 
