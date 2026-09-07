@@ -696,47 +696,37 @@ async function iniciarCamara(){
     takeButton.disabled =
       false;
 
-/*====================================================
- ACTIVAR MODO RECIBIDO DEL FORMULARIO
-====================================================*/
 
-if(modo === "medir"){
-
-  console.log(
-    "📏 ACTIVANDO MEDIR POSTE AUTOMÁTICAMENTE"
-  );
-
-  activarModoMedir();
-
-}
-else if(modo === "plomado"){
-
-  console.log(
-    "📐 ACTIVANDO PLOMADO POSTE AUTOMÁTICAMENTE"
-  );
-
-  activarModoPlomado();
-
-}
     cargarLogo();
 
 
     /*===============================================
-     VERIFICAR MODO RECIBIDO DESDE EL FORMULARIO
+     VERIFICAR MODO RECIBIDO
     ===============================================*/
 
     console.log(
-      "MODO DE CÁMARA:",
+      "========================================"
+    );
+
+    console.log(
+      "CAMERA STAMP - MODO RECIBIDO:",
       modo
     );
 
+    console.log(
+      "========================================"
+    );
+
+
+    /*===============================================
+     ACTIVAR MODO AUTOMÁTICAMENTE
+    ===============================================*/
 
     if(modo === "plomado"){
 
       console.log(
-        "📐 ACTIVANDO MODO PLOMADO"
+        "📐 ACTIVANDO PLOMADO POSTE"
       );
-
 
       activarModoPlomado();
 
@@ -744,9 +734,8 @@ else if(modo === "plomado"){
     else if(modo === "medir"){
 
       console.log(
-        "📏 ACTIVANDO MODO MEDIR"
+        "📏 ACTIVANDO MEDIR POSTE"
       );
-
 
       activarModoMedir();
 
@@ -761,7 +750,7 @@ else if(modo === "plomado"){
 
 
     /*===============================================
-     ESTADO FINAL
+     ESTADO
     ===============================================*/
 
     if(modo === "plomado"){
@@ -813,7 +802,6 @@ else if(modo === "plomado"){
   }
 
 }
-
 /*====================================================
  CARGAR LOGO
 ====================================================*/
