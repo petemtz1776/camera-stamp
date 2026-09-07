@@ -471,6 +471,10 @@ const tipo =
   params.get("tipo") || "poste";
 
 
+const modo =
+  params.get("modo") || "normal";
+
+
 const proyecto =
   params.get("proyecto") || "";
 
@@ -485,6 +489,18 @@ const hub =
 
 const rama =
   params.get("rama") || "";
+
+
+console.log(
+  "TIPO RECIBIDO:",
+  tipo
+);
+
+
+console.log(
+  "MODO RECIBIDO:",
+  modo
+);
 
 
 /*====================================================
