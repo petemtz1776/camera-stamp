@@ -696,7 +696,28 @@ async function iniciarCamara(){
     takeButton.disabled =
       false;
 
+/*====================================================
+ ACTIVAR MODO RECIBIDO DEL FORMULARIO
+====================================================*/
 
+if(modo === "medir"){
+
+  console.log(
+    "📏 ACTIVANDO MEDIR POSTE AUTOMÁTICAMENTE"
+  );
+
+  activarModoMedir();
+
+}
+else if(modo === "plomado"){
+
+  console.log(
+    "📐 ACTIVANDO PLOMADO POSTE AUTOMÁTICAMENTE"
+  );
+
+  activarModoPlomado();
+
+}
     cargarLogo();
 
 
