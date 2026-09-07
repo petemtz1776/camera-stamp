@@ -602,6 +602,64 @@ let zonaLogo = null;
 let zonaEstampado = null;
 
 
+  /*====================================================
+ MODOS ESPECIALES DE POSTE
+====================================================*/
+
+let modoPosteActivo = false;
+
+
+/*====================================================
+ ACTIVAR PLOMADO POSTE
+====================================================*/
+
+function activarModoPlomado(){
+
+  modoPosteActivo = true;
+
+  signalButton.style.display = "none";
+
+  takeButton.style.display = "block";
+
+  takeButton.disabled = false;
+
+  takeButton.textContent =
+    "📐 TOMAR PLOMADO";
+
+  takeButton.classList.add("modoPoste");
+
+  console.log(
+    "✅ MODO PLOMADO POSTE ACTIVADO"
+  );
+
+}
+
+
+/*====================================================
+ ACTIVAR MEDIR POSTE
+====================================================*/
+
+function activarModoMedir(){
+
+  modoPosteActivo = true;
+
+  signalButton.style.display = "none";
+
+  takeButton.style.display = "block";
+
+  takeButton.disabled = false;
+
+  takeButton.textContent =
+    "📏 TOMAR MEDIR";
+
+  takeButton.classList.add("modoPoste");
+
+  console.log(
+    "✅ MODO MEDIR POSTE ACTIVADO"
+  );
+
+}
+
 /*====================================================
  VARIABLES DE FLECHA
 ====================================================*/
