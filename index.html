@@ -700,10 +700,71 @@ async function iniciarCamara(){
     cargarLogo();
 
 
-    status.textContent =
-      "✅ CÁMARA LISTA.\n\n" +
-      "Puedes tomar la foto directamente " +
-      "o activar SEÑALAR.";
+    /*===============================================
+     VERIFICAR MODO RECIBIDO DESDE EL FORMULARIO
+    ===============================================*/
+
+    console.log(
+      "MODO DE CÁMARA:",
+      modo
+    );
+
+
+    if(modo === "plomado"){
+
+      console.log(
+        "📐 ACTIVANDO MODO PLOMADO"
+      );
+
+
+      activarModoPlomado();
+
+    }
+    else if(modo === "medir"){
+
+      console.log(
+        "📏 ACTIVANDO MODO MEDIR"
+      );
+
+
+      activarModoMedir();
+
+    }
+    else{
+
+      console.log(
+        "📷 CÁMARA NORMAL"
+      );
+
+    }
+
+
+    /*===============================================
+     ESTADO FINAL
+    ===============================================*/
+
+    if(modo === "plomado"){
+
+      status.textContent =
+        "📐 PLOMADO POSTE ACTIVO.\n\n" +
+        "Seleccione la BASE y después la PARTE SUPERIOR.";
+
+    }
+    else if(modo === "medir"){
+
+      status.textContent =
+        "📏 MEDIR POSTE ACTIVO.\n\n" +
+        "Seleccione la BASE y después la PARTE SUPERIOR.";
+
+    }
+    else{
+
+      status.textContent =
+        "✅ CÁMARA LISTA.\n\n" +
+        "Puedes tomar la foto directamente " +
+        "o activar SEÑALAR.";
+
+    }
 
   }
   catch(error){
@@ -731,7 +792,6 @@ async function iniciarCamara(){
   }
 
 }
-
 
 /*====================================================
  CARGAR LOGO
