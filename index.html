@@ -3200,21 +3200,91 @@ function detenerCamara(){
  INICIAR AUTOMÁTICAMENTE
 ====================================================*/
 
+/*====================================================
+ INICIAR AUTOMÁTICAMENTE
+====================================================*/
+
 window.addEventListener(
-  "load",
-  function(){
+    "load",
+    function(){
 
-    startButton.style.display = "none";
+        console.log(
+            "🚀 CAMERA STAMP: INICIANDO AUTOMÁTICAMENTE"
+        );
 
-    signalButton.style.display = "none";
 
-    takeButton.style.display = "block";
+        /*===============================================
+         CREAR INTERFAZ
+        ===============================================*/
 
-    cargarLogo();
+        crearInterfazCamara();
 
-    iniciarCamara();
 
-  }
+        /*===============================================
+         MOSTRAR CÁMARA
+        ===============================================*/
+
+        const modal =
+            document.getElementById(
+                "cameraModal"
+            );
+
+
+        if(modal){
+
+            modal.style.display =
+                "flex";
+
+        }
+
+
+        /*===============================================
+         PREPARAR MODO RECIBIDO POR URL
+        ===============================================*/
+
+        prepararModoCamara();
+
+
+        /*===============================================
+         CARGAR LOGO
+        ===============================================*/
+
+        if(typeof cargarLogo === "function"){
+
+            cargarLogo();
+
+        }
+
+
+        /*===============================================
+         OBTENER GPS
+        ===============================================*/
+
+        obtenerUbicacionCamara();
+
+
+        /*===============================================
+         INICIAR CÁMARA
+        ===============================================*/
+
+        if(typeof iniciarCamara === "function"){
+
+            iniciarCamara();
+
+        }
+        else{
+
+            console.error(
+                "❌ No existe la función iniciarCamara()"
+            );
+
+            mostrarEstadoCamara(
+                "❌ No se encontró la función de inicio de cámara."
+            );
+
+        }
+
+    }
 );
 
 </script>
