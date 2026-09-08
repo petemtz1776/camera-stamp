@@ -3400,20 +3400,12 @@ window.addEventListener(
     function(){
 
         console.log(
-            "🚀 CAMERA STAMP: INICIANDO AUTOMÁTICAMENTE"
+            "🚀 CAMERA STAMP CARGADO"
         );
 
 
-        /*===============================================
-         CREAR INTERFAZ
-        ===============================================*/
-
         crearInterfazCamara();
 
-
-        /*===============================================
-         MOSTRAR CÁMARA
-        ===============================================*/
 
         const modal =
             document.getElementById(
@@ -3429,51 +3421,23 @@ window.addEventListener(
         }
 
 
-        /*===============================================
-         PREPARAR MODO RECIBIDO POR URL
-        ===============================================*/
-
         prepararModoCamara();
 
 
-        /*===============================================
-         CARGAR LOGO
-        ===============================================*/
-
-        if(typeof cargarLogo === "function"){
+        if(
+            typeof cargarLogo ===
+            "function"
+        ){
 
             cargarLogo();
 
         }
 
 
-        /*===============================================
-         OBTENER GPS
-        ===============================================*/
-
         obtenerUbicacionCamara();
 
 
-        /*===============================================
-         INICIAR CÁMARA
-        ===============================================*/
-
-        if(typeof iniciarCamara === "function"){
-
-            iniciarCamara();
-
-        }
-        else{
-
-            console.error(
-                "❌ No existe la función iniciarCamara()"
-            );
-
-            mostrarEstadoCamara(
-                "❌ No se encontró la función de inicio de cámara."
-            );
-
-        }
+        iniciarCamara();
 
     }
 );
