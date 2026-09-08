@@ -1,2019 +1,3 @@
-<script>
-/*****************************************************
- * PETES POLI WORKS
- * camara.js
- *
- * CÁMARA + GPS + ESTAMPADO
- * + SEÑALAMIENTO
- * + PLOMADO DE POSTE
- * + MEDICIÓN DE POSTE
- *****************************************************/
-
-let cameraStream = null;
-let cameraTipo = null;
-let cameraModo = "normal";
-let cameraPhoto = null;
-let cameraLat = null;
-let cameraLng = null;
-let cameraAccuracy = null;
-
-/*====================================================
- RECIBIR PARÁMETROS DE LA URL
-====================================================*/
-
-const parametrosURL =
-    new URLSearchParams(
-        window.location.search
-    );
-console.log(
-    "🔴 MODO LEÍDO DESDE URL:",
-    parametrosURL.get("modo")
-);
-
-console.log(
-    "🔴 CAMERA MODO FINAL:",
-    cameraModo
-);
-
-cameraTipo =
-    parametrosURL.get("tipo") || null;
-
-
-cameraModo =
-    parametrosURL.get("modo") || "normal";
-
-
-console.log(
-    "TIPO RECIBIDO:",
-    cameraTipo
-);
-
-
-console.log(
-    "MODO RECIBIDO:",
-    cameraModo
-);
-
-
-/*====================================================
- CONFIGURACIÓN DE COMPRESIÓN
-====================================================*/
-
-const CAMERA_TARGET_KB = 150;
-
-const CAMERA_TARGET_BYTES =
-    CAMERA_TARGET_KB * 1024;
-
-const CAMERA_MIN_QUALITY = 0.35;
-const CAMERA_MAX_QUALITY = 0.90;
-const CAMERA_QUALITY_STEP = 0.05;
-
-
-/*====================================================
- SEÑALAMIENTO
-====================================================*/
-
-let cameraSenalarActivo = false;
-
-let cameraFlechaX = null;
-let cameraFlechaY = null;
-
-
-/*====================================================
- INSPECCIÓN DE POSTE
-====================================================*/
-
-let posteInspeccionActivo = false;
-
-let postePuntoBaseX = null;
-let postePuntoBaseY = null;
-
-let postePuntoArribaX = null;
-let postePuntoArribaY = null;
-
-let posteAngulo = null;
-let posteDesviacion = null;
-
-let posteDistanciaMetros = null;
-
-
-/*====================================================
- CONFIGURACIÓN PLOMADO
-====================================================*/
-
-const POSTE_LIMITE_PLOMADO_GRADOS = 1.0;
-
-const POSTE_RADIO_METROS = 5;
-
-
-/*====================================================
- ABRIR CÁMARA
-====================================================*/
-
-function abrirCamara(
-    tipo,
-    modo = "normal"
-){
-
-    console.log(
-        "========================================"
-    );
-
-    console.log(
-        "ABRIENDO CAMERA STAMP EN GITHUB"
-    );
-
-    console.log(
-        "TIPO:",
-        tipo
-    );
-
-    console.log(
-        "MODO:",
-        modo
-    );
-
-    console.log(
-        "========================================"
-    );
-
-
-    /*===============================================
-     VERIFICAR FOTOS
-    ===============================================*/
-
-    if(!fotos[tipo]){
-
-        fotos[tipo] = [];
-
-    }
-
-
-    const limite =
-        Number(
-            photoLimits[tipo] || 0
-        );
-
-
-    const disponibles =
-        obtenerFotosDisponibles(
-            tipo
-        );
-
-
-    if(disponibles <= 0){
-
-        alert(
-            "Ya alcanzaste el límite de " +
-            limite +
-            " fotografías."
-        );
-
-        return;
-
-    }
-
-
-    /*===============================================
-     GUARDAR DATOS
-    ===============================================*/
-
-    cameraTipo =
-        tipo;
-
-    cameraModo =
-        modo || "normal";
-
-
-    cameraSenalarActivo =
-        false;
-
-    cameraFlechaX =
-        null;
-
-    cameraFlechaY =
-        null;
-
-    cameraPhoto =
-        null;
-
-
-    resetearInspeccionPoste();
-
-
-    /*===============================================
-     CONSTRUIR URL DE CAMERA STAMP
-    ===============================================*/
-
-    const url =
-    CAMERA_GITHUB_URL +
-    "?tipo=" +
-    encodeURIComponent(tipo) +
-    "&modo=" +
-    encodeURIComponent(cameraModo);
-
-
-    console.log(
-        "ABRIENDO CAMERA STAMP:",
-        url
-    );
-
-
-    /*===============================================
-     ABRIR VENTANA
-    ===============================================*/
-
-    cameraWindow =
-        window.open(
-            url,
-            "cameraStamp",
-            "width=500,height=900"
-        );
-
-
-    /*===============================================
-     VALIDAR APERTURA
-    ===============================================*/
-
-    if(!cameraWindow){
-
-        alert(
-            "El navegador bloqueó la ventana de la cámara.\n\n" +
-            "Permite las ventanas emergentes para esta aplicación."
-        );
-
-        return;
-
-    }
-
-
-    console.log(
-        "✅ CAMERA STAMP ABIERTO"
-    );
-
-}
-
-
-/*====================================================
- PREPARAR MODO
-====================================================*/
-
-function prepararModoCamara(){
-
-    const titulo =
-        document.getElementById(
-            "cameraModeTitle"
-        );
-
-
-    const botonPlomado =
-        document.getElementById(
-            "cameraPlomadoButton"
-        );
-
-
-    const botonMedir =
-        document.getElementById(
-            "cameraMedirButton"
-        );
-
-
-    /*===============================================
-     TÍTULO
-    ===============================================*/
-
-    if(titulo){
-
-        if(cameraModo === "plomado"){
-
-            titulo.innerHTML =
-                "📐 PLOMADO POSTE";
-
-        }
-        else if(cameraModo === "medir"){
-
-            titulo.innerHTML =
-                "📏 MEDIR POSTE";
-
-        }
-        else{
-
-            titulo.innerHTML =
-                "📷 CÁMARA";
-
-        }
-
-    }
-
-
-    /*===============================================
-     ACTIVAR MODO SELECCIONADO
-    ===============================================*/
-
-    if(cameraModo === "plomado"){
-
-        activarModoPlomado();
-
-    }
-    else if(cameraModo === "medir"){
-
-        activarModoMedir();
-
-    }
-
-
-    /*===============================================
-     OCULTAR BOTONES DE CAMBIO DE MODO
-    ===============================================*/
-
-    if(cameraModo !== "normal"){
-
-        if(botonPlomado){
-
-            botonPlomado.style.display =
-                "none";
-
-        }
-
-
-        if(botonMedir){
-
-            botonMedir.style.display =
-                "none";
-
-        }
-
-    }
-    else{
-
-        if(botonPlomado){
-
-            botonPlomado.style.display =
-                "inline-block";
-
-        }
-
-
-        if(botonMedir){
-
-            botonMedir.style.display =
-                "inline-block";
-
-        }
-
-    }
-
-}
-
-
-/*====================================================
- OBTENER GPS
-====================================================*/
-
-function obtenerUbicacionCamara(){
-
-    cameraLat = null;
-    cameraLng = null;
-    cameraAccuracy = null;
-
-
-    if(!navigator.geolocation){
-
-        mostrarEstadoCamara(
-            "Este dispositivo no permite obtener ubicación GPS."
-        );
-
-        return;
-
-    }
-
-
-    mostrarEstadoCamara(
-        "Obteniendo ubicación GPS..."
-    );
-
-
-    navigator.geolocation.getCurrentPosition(
-
-        function(position){
-
-            cameraLat =
-                position.coords.latitude;
-
-            cameraLng =
-                position.coords.longitude;
-
-            cameraAccuracy =
-                position.coords.accuracy;
-
-
-            console.log(
-                "GPS CAMARA:",
-                {
-                    lat:cameraLat,
-                    lng:cameraLng,
-                    accuracy:cameraAccuracy
-                }
-            );
-
-
-            actualizarEstadoCompleto();
-
-        },
-
-
-        function(error){
-
-            console.error(
-                "GPS ERROR:",
-                error
-            );
-
-
-            cameraLat = null;
-            cameraLng = null;
-            cameraAccuracy = null;
-
-
-            let mensaje =
-                "No fue posible obtener la ubicación GPS.";
-
-
-            switch(error.code){
-
-                case 1:
-
-                    mensaje =
-                        "Permiso de ubicación rechazado.";
-
-                    break;
-
-                case 2:
-
-                    mensaje =
-                        "No se pudo determinar la ubicación.";
-
-                    break;
-
-                case 3:
-
-                    mensaje =
-                        "La ubicación tardó demasiado.";
-
-                    break;
-
-            }
-
-
-            mostrarEstadoCamara(
-
-                mensaje +
-
-                "<br><br>" +
-
-                "No se podrá estampar la fotografía sin coordenadas."
-
-            );
-
-
-            const boton =
-                document.getElementById(
-                    "cameraTakeButton"
-                );
-
-
-            if(boton){
-
-                boton.disabled =
-                    true;
-
-            }
-
-        },
-
-        {
-            enableHighAccuracy:true,
-            timeout:15000,
-            maximumAge:0
-        }
-
-    );
-
-}
-
-
-/*====================================================
- ACTUALIZAR ESTADO COMPLETO
-====================================================*/
-
-function actualizarEstadoCompleto(){
-
-    const boton =
-        document.getElementById(
-            "cameraTakeButton"
-        );
-
-
-    if(!boton){
-
-        return;
-
-    }
-
-
-    if(
-        cameraLat === null ||
-        cameraLng === null
-    ){
-
-        boton.disabled =
-            true;
-
-        mostrarEstadoCamara(
-            "Esperando ubicación GPS..."
-        );
-
-        return;
-
-    }
-
-
-    if(!stream){
-
-        boton.disabled =
-            true;
-
-        mostrarEstadoCamara(
-            "Esperando cámara..."
-        );
-
-        return;
-
-    }
-
-
-    boton.disabled =
-        false;
-
-
-    actualizarInformacionCamara();
-
-}
-
-
-/*====================================================
- CREAR INTERFAZ DE CÁMARA
-====================================================*/
-
-function crearInterfazCamara(){
-
-    /*
-     * SI YA EXISTE, NO CREAR OTRA.
-     */
-
-    const existente =
-        document.getElementById(
-            "cameraModal"
-        );
-
-
-    if(existente){
-
-        return;
-
-    }
-
-
-    const modal =
-        document.createElement("div");
-
-
-    modal.id =
-        "cameraModal";
-
-
-    modal.style.cssText = `
-        position:fixed;
-        inset:0;
-        z-index:99999;
-        background:#000;
-        display:none;
-        align-items:center;
-        justify-content:center;
-        overflow:auto;
-    `;
-
-
-    modal.innerHTML = `
-
-        <div id="cameraBox"
-             style="
-                position:relative;
-                width:100%;
-                max-width:900px;
-                margin:auto;
-                background:#111;
-                color:#fff;
-             ">
-
-            <div id="cameraHeader"
-                 style="
-                    display:flex;
-                    justify-content:space-between;
-                    align-items:center;
-                    padding:12px;
-                    background:#111;
-                 ">
-
-                <strong id="cameraModeTitle">
-                    📷 CÁMARA
-                </strong>
-
-                <button
-                    type="button"
-                    onclick="cerrarCamara()">
-                    ✕
-                </button>
-
-            </div>
-
-
-            <div id="cameraViewer"
-                 style="
-                    position:relative;
-                    width:100%;
-                    overflow:hidden;
-                    background:#000;
-                 ">
-
-                <video
-                    id="cameraVideo"
-                    autoplay
-                    playsinline
-                    muted
-                    style="
-                        display:block;
-                        width:100%;
-                        height:auto;
-                    ">
-                </video>
-
-
-                <canvas
-                    id="cameraArrowCanvas"
-                    style="
-                        display:none;
-                        position:absolute;
-                        left:0;
-                        top:0;
-                        width:100%;
-                        height:100%;
-                        z-index:5;
-                        touch-action:none;
-                    ">
-                </canvas>
-
-
-                <canvas
-                    id="postePlomadoCanvas"
-                    style="
-                        display:none;
-                        position:absolute;
-                        left:0;
-                        top:0;
-                        width:100%;
-                        height:100%;
-                        z-index:6;
-                        pointer-events:auto;
-                        touch-action:none;
-                    ">
-                </canvas>
-
-
-                <div
-                    id="posteMedicionOverlay"
-                    style="
-                        display:none;
-                        position:absolute;
-                        left:10px;
-                        top:10px;
-                        z-index:10;
-                        background:rgba(0,0,0,.72);
-                        padding:10px 14px;
-                        border-radius:8px;
-                        font-size:16px;
-                        line-height:1.5;
-                    ">
-                    Preparando medición...
-                </div>
-
-            </div>
-
-
-            <canvas
-                id="cameraCanvas"
-                style="display:none;">
-            </canvas>
-
-
-            <div id="cameraControls"
-                 style="padding:10px;">
-
-
-                <div
-                    id="cameraInfo"
-                    style="
-                        background:#222;
-                        padding:10px;
-                        border-radius:8px;
-                        margin-bottom:10px;
-                        font-size:14px;
-                        line-height:1.5;
-                    ">
-                    Obteniendo información...
-                </div>
-
-
-                <button
-                    type="button"
-                    id="cameraPlomadoButton"
-                    onclick="activarModoPlomado()">
-                    📐 PLOMADO POSTE
-                </button>
-
-
-                <button
-                    type="button"
-                    id="cameraMedirButton"
-                    onclick="activarModoMedir()">
-                    📏 MEDIR POSTE
-                </button>
-
-
-                <button
-                    type="button"
-                    id="cameraMarkButton"
-                    disabled
-                    onclick="activarSenalamientoCamara()">
-                    🎯 SEÑALAR
-                </button>
-
-
-                <button
-                    type="button"
-                    id="cameraCancelMarkButton"
-                    style="display:none;"
-                    onclick="cancelarSenalamientoCamara()">
-                    ❌ CANCELAR SEÑAL
-                </button>
-
-
-                <button
-                    type="button"
-                    id="cameraCancelPosteButton"
-                    style="display:none;"
-                    onclick="cancelarModoPoste()">
-                    ❌ CANCELAR INSPECCIÓN
-                </button>
-
-
-                <button
-                    type="button"
-                    id="cameraTakeButton"
-                    disabled
-                    onclick="tomarFotoCamara()">
-                    📷 TOMAR FOTO
-                </button>
-
-
-                <button
-                    type="button"
-                    id="cameraRetakeButton"
-                    style="display:none;"
-                    onclick="volverACamara()">
-                    🔄 TOMAR OTRA
-                </button>
-
-
-                <button
-                    type="button"
-                    id="cameraUseButton"
-                    style="display:none;"
-                    onclick="usarFotoCamara()">
-                    ✅ USAR FOTO
-                </button>
-
-
-                <div
-                    id="cameraStatus"
-                    style="
-                        margin-top:10px;
-                        padding:10px;
-                        background:#181818;
-                        border-radius:8px;
-                    ">
-                    Preparando cámara...
-                </div>
-
-            </div>
-
-
-            <img
-                id="cameraPreview"
-                style="
-                    display:none;
-                    width:100%;
-                    height:auto;
-                ">
-
-        </div>
-    `;
-
-
-    document.body.appendChild(
-        modal
-    );
-
-
-    configurarEventosSenalamiento();
-
-    configurarEventosPlomado();
-
-    actualizarInformacionCamara();
-
-}
-
-
-/*====================================================
- RESETEAR INSPECCIÓN POSTE
-====================================================*/
-
-function resetearInspeccionPoste(){
-
-    posteInspeccionActivo =
-        false;
-
-    postePuntoBaseX =
-        null;
-
-    postePuntoBaseY =
-        null;
-
-    postePuntoArribaX =
-        null;
-
-    postePuntoArribaY =
-        null;
-
-    posteAngulo =
-        null;
-
-    posteDesviacion =
-        null;
-
-    posteDistanciaMetros =
-        null;
-
-}
-
-
-/*====================================================
- ACTIVAR MODO PLOMADO
-====================================================*/
-
-function activarModoPlomado(){
-
-    if(!stream){
-
-        alert(
-            "La cámara todavía no está lista."
-        );
-
-        return;
-
-    }
-
-    cameraModo = "plomado";
-
-    resetearInspeccionPoste();
-
-    posteInspeccionActivo = true;
-
-    // ...el resto igual...
-}
-
-
-/*====================================================
- ACTIVAR MODO MEDIR
-====================================================*/
-
-function activarModoMedir(){
-
-    if(!stream){
-
-        alert(
-            "La cámara todavía no está lista."
-        );
-
-        return;
-
-    }
-
-    cameraModo = "medir";
-
-    resetearInspeccionPoste();
-
-    posteInspeccionActivo = true;
-
-    // ...el resto igual...
-}
-
-
-/*====================================================
- CANCELAR MODO POSTE
-====================================================*/
-
-function cancelarModoPoste(){
-
-    resetearInspeccionPoste();
-
-
-    cameraModo =
-        "normal";
-
-
-    const canvas =
-        document.getElementById(
-            "postePlomadoCanvas"
-        );
-
-
-    if(canvas){
-
-        const ctx =
-            canvas.getContext("2d");
-
-        ctx.clearRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-
-        canvas.style.display =
-            "none";
-
-    }
-
-
-    const overlay =
-        document.getElementById(
-            "posteMedicionOverlay"
-        );
-
-
-    if(overlay){
-
-        overlay.style.display =
-            "none";
-
-    }
-
-
-    const cancelar =
-        document.getElementById(
-            "cameraCancelPosteButton"
-        );
-
-
-    if(cancelar){
-
-        cancelar.style.display =
-            "none";
-
-    }
-
-
-    const plomado =
-        document.getElementById(
-            "cameraPlomadoButton"
-        );
-
-
-    if(plomado){
-
-        plomado.style.display =
-            "inline-block";
-
-    }
-
-
-    const medir =
-        document.getElementById(
-            "cameraMedirButton"
-        );
-
-
-    if(medir){
-
-        medir.style.display =
-            "inline-block";
-
-    }
-
-
-    const titulo =
-        document.getElementById(
-            "cameraModeTitle"
-        );
-
-
-    if(titulo){
-
-        titulo.innerHTML =
-            "📷 CÁMARA";
-
-    }
-
-
-    mostrarEstadoCamara(
-        "Inspección cancelada."
-    );
-
-}
-
-
-/*====================================================
- CONFIGURAR EVENTOS PLOMADO
-====================================================*/
-
-function configurarEventosPlomado(){
-
-    const canvas =
-        document.getElementById(
-            "postePlomadoCanvas"
-        );
-
-
-    if(!canvas){
-
-        return;
-
-    }
-
-
-    canvas.addEventListener(
-        "click",
-        seleccionarPuntoPoste
-    );
-
-
-    canvas.addEventListener(
-        "touchend",
-        function(event){
-
-            if(!posteInspeccionActivo){
-
-                return;
-
-            }
-
-
-            if(
-                !event.changedTouches ||
-                !event.changedTouches.length
-            ){
-
-                return;
-
-            }
-
-
-            event.preventDefault();
-
-
-            const touch =
-                event.changedTouches[0];
-
-
-            const rect =
-                canvas.getBoundingClientRect();
-
-
-            const x =
-                (
-                    touch.clientX -
-                    rect.left
-                ) *
-                (
-                    canvas.width /
-                    rect.width
-                );
-
-
-            const y =
-                (
-                    touch.clientY -
-                    rect.top
-                ) *
-                (
-                    canvas.height /
-                    rect.height
-                );
-
-
-            seleccionarPuntoPosteXY(
-                x,
-                y
-            );
-
-        },
-        {
-            passive:false
-        }
-    );
-
-}
-
-
-/*====================================================
- SELECCIONAR PUNTO POSTE
-====================================================*/
-
-function seleccionarPuntoPoste(event){
-
-    if(!posteInspeccionActivo){
-
-        return;
-
-    }
-
-
-    const canvas =
-        document.getElementById(
-            "postePlomadoCanvas"
-        );
-
-
-    if(!canvas){
-
-        return;
-
-    }
-
-
-    const rect =
-        canvas.getBoundingClientRect();
-
-
-    const x =
-        (
-            event.clientX -
-            rect.left
-        ) *
-        (
-            canvas.width /
-            rect.width
-        );
-
-
-    const y =
-        (
-            event.clientY -
-            rect.top
-        ) *
-        (
-            canvas.height /
-            rect.height
-        );
-
-
-    seleccionarPuntoPosteXY(
-        x,
-        y
-    );
-
-}
-
-
-/*====================================================
- PROCESAR PUNTO POSTE
-====================================================*/
-
-function seleccionarPuntoPosteXY(
-    x,
-    y
-){
-
-    if(postePuntoBaseX === null){
-
-        postePuntoBaseX =
-            x;
-
-        postePuntoBaseY =
-            y;
-
-
-        dibujarGuiaPlomado();
-
-
-        mostrarEstadoCamara(
-
-            "📍 BASE SELECCIONADA.<br><br>" +
-
-            "Ahora toque la PARTE SUPERIOR del poste."
-
-        );
-
-
-        return;
-
-    }
-
-
-    if(postePuntoArribaX === null){
-
-        postePuntoArribaX =
-            x;
-
-        postePuntoArribaY =
-            y;
-
-
-        calcularPlomadoPoste();
-
-        dibujarGuiaPlomado();
-
-        return;
-
-    }
-
-
-    postePuntoBaseX =
-        x;
-
-    postePuntoBaseY =
-        y;
-
-    postePuntoArribaX =
-        null;
-
-    postePuntoArribaY =
-        null;
-
-    posteAngulo =
-        null;
-
-    posteDesviacion =
-        null;
-
-
-    dibujarGuiaPlomado();
-
-
-    mostrarEstadoCamara(
-
-        "Nueva BASE seleccionada.<br><br>" +
-
-        "Ahora toque la parte superior."
-
-    );
-
-}
-
-
-/*====================================================
- DIBUJAR GUÍA PLOMADO
-====================================================*/
-
-function dibujarGuiaPlomado(){
-
-    const canvas =
-        document.getElementById(
-            "postePlomadoCanvas"
-        );
-
-
-    if(!canvas){
-
-        return;
-
-    }
-
-
-    const ctx =
-        canvas.getContext("2d");
-
-
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-
-    const width =
-        canvas.width;
-
-    const height =
-        canvas.height;
-
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        width / 2,
-        0
-    );
-
-    ctx.lineTo(
-        width / 2,
-        height
-    );
-
-    ctx.strokeStyle =
-        "rgba(0,255,0,.75)";
-
-    ctx.lineWidth =
-        Math.max(
-            3,
-            width / 400
-        );
-
-    ctx.setLineDash([
-        15,
-        12
-    ]);
-
-    ctx.stroke();
-
-    ctx.setLineDash([]);
-
-
-    if(postePuntoBaseX !== null){
-
-        dibujarPuntoPoste(
-            ctx,
-            postePuntoBaseX,
-            postePuntoBaseY,
-            "#00ff00"
-        );
-
-    }
-
-
-    if(postePuntoArribaX !== null){
-
-        dibujarPuntoPoste(
-            ctx,
-            postePuntoArribaX,
-            postePuntoArribaY,
-            "#ff0000"
-        );
-
-    }
-
-
-    if(
-        postePuntoBaseX !== null &&
-        postePuntoArribaX !== null
-    ){
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-            postePuntoBaseX,
-            postePuntoBaseY
-        );
-
-        ctx.lineTo(
-            postePuntoArribaX,
-            postePuntoArribaY
-        );
-
-        ctx.strokeStyle =
-            "#ff0000";
-
-        ctx.lineWidth =
-            Math.max(
-                6,
-                width / 180
-            );
-
-        ctx.stroke();
-
-    }
-
-}
-
-
-/*====================================================
- DIBUJAR PUNTO
-====================================================*/
-
-function dibujarPuntoPoste(
-    ctx,
-    x,
-    y,
-    color
-){
-
-    const radio =
-        Math.max(
-            12,
-            ctx.canvas.width / 60
-        );
-
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x,
-        y,
-        radio,
-        0,
-        Math.PI * 2
-    );
-
-
-    ctx.fillStyle =
-        color;
-
-    ctx.fill();
-
-
-    ctx.strokeStyle =
-        "#000";
-
-    ctx.lineWidth =
-        4;
-
-    ctx.stroke();
-
-}
-
-
-/*====================================================
- CALCULAR PLOMADO
-====================================================*/
-
-function calcularPlomadoPoste(){
-
-    if(
-        postePuntoBaseX === null ||
-        postePuntoBaseY === null ||
-        postePuntoArribaX === null ||
-        postePuntoArribaY === null
-    ){
-
-        return;
-
-    }
-
-
-    const dx =
-        postePuntoArribaX -
-        postePuntoBaseX;
-
-
-    const dy =
-        postePuntoBaseY -
-        postePuntoArribaY;
-
-
-    posteAngulo =
-        Math.atan2(
-            Math.abs(dx),
-            Math.abs(dy)
-        ) *
-        180 /
-        Math.PI;
-
-
-    let direccion =
-        "CENTRO";
-
-
-    if(dx < 0){
-
-        direccion =
-            "IZQUIERDA";
-
-    }
-    else if(dx > 0){
-
-        direccion =
-            "DERECHA";
-
-    }
-
-
-    posteDesviacion =
-        Math.abs(dx);
-
-
-    let resultado =
-        "🟢 EN PLOMO";
-
-
-    if(
-        posteAngulo >
-        POSTE_LIMITE_PLOMADO_GRADOS
-    ){
-
-        resultado =
-            "🔴 FUERA DE PLOMO";
-
-    }
-
-
-    const overlay =
-        document.getElementById(
-            "posteMedicionOverlay"
-        );
-
-
-    if(overlay){
-
-        overlay.style.display =
-            "block";
-
-
-        overlay.innerHTML =
-
-            "📐 <strong>PLOMADO</strong><br>" +
-
-            "Ángulo: " +
-
-            posteAngulo.toFixed(2) +
-
-            "°<br>" +
-
-            "Dirección: " +
-
-            direccion +
-
-            "<br>" +
-
-            resultado;
-
-    }
-
-
-    mostrarEstadoCamara(
-
-        "📐 <strong>RESULTADO DE PLOMADO</strong><br><br>" +
-
-        "Ángulo: " +
-
-        posteAngulo.toFixed(2) +
-
-        "°<br>" +
-
-        "Dirección: " +
-
-        direccion +
-
-        "<br><br>" +
-
-        resultado +
-
-        "<br><br>" +
-
-        "Límite: " +
-
-        POSTE_LIMITE_PLOMADO_GRADOS.toFixed(2) +
-
-        "°"
-
-    );
-
-}
-
-
-/*====================================================
- CONFIGURAR SEÑALAMIENTO
-====================================================*/
-
-function configurarEventosSenalamiento(){
-
-    const canvas =
-        document.getElementById(
-            "cameraArrowCanvas"
-        );
-
-
-    if(!canvas){
-
-        return;
-
-    }
-
-
-    canvas.addEventListener(
-        "click",
-        seleccionarPuntoFlecha
-    );
-
-
-    canvas.addEventListener(
-        "touchend",
-        function(event){
-
-            if(!cameraSenalarActivo){
-
-                return;
-
-            }
-
-
-            if(
-                !event.changedTouches ||
-                !event.changedTouches.length
-            ){
-
-                return;
-
-            }
-
-
-            event.preventDefault();
-
-
-            const touch =
-                event.changedTouches[0];
-
-
-            const rect =
-                canvas.getBoundingClientRect();
-
-
-            const x =
-                (
-                    touch.clientX -
-                    rect.left
-                ) *
-                (
-                    canvas.width /
-                    rect.width
-                );
-
-
-            const y =
-                (
-                    touch.clientY -
-                    rect.top
-                ) *
-                (
-                    canvas.height /
-                    rect.height
-                );
-
-
-            colocarFlechaCamara(
-                x,
-                y
-            );
-
-        },
-        {
-            passive:false
-        }
-    );
-
-}
-
-
-/*====================================================
- ACTIVAR SEÑALAMIENTO
-====================================================*/
-
-function activarSenalamientoCamara(){
-
-    if(!stream){
-
-        alert(
-            "La cámara todavía no está lista."
-        );
-
-        return;
-
-    }
-
-
-    cameraSenalarActivo =
-        true;
-
-
-    const video =
-        document.getElementById(
-            "cameraVideo"
-        );
-
-
-    const canvas =
-        document.getElementById(
-            "cameraArrowCanvas"
-        );
-
-
-    if(!video || !canvas){
-
-        return;
-
-    }
-
-
-    canvas.width =
-        video.videoWidth || 1280;
-
-    canvas.height =
-        video.videoHeight || 720;
-
-
-    canvas.style.display =
-        "block";
-
-
-    dibujarFlechaCamara();
-
-
-    const boton =
-        document.getElementById(
-            "cameraMarkButton"
-        );
-
-
-    if(boton){
-
-        boton.style.display =
-            "none";
-
-    }
-
-
-    const cancelar =
-        document.getElementById(
-            "cameraCancelMarkButton"
-        );
-
-
-    if(cancelar){
-
-        cancelar.style.display =
-            "inline-block";
-
-    }
-
-
-    mostrarEstadoCamara(
-
-        "🎯 SEÑALAR ACTIVO<br><br>" +
-
-        "Toque sobre el elemento que desea señalar."
-
-    );
-
-}
-
-
-/*====================================================
- CANCELAR SEÑALAMIENTO
-====================================================*/
-
-function cancelarSenalamientoCamara(){
-
-    cameraSenalarActivo =
-        false;
-
-    cameraFlechaX =
-        null;
-
-    cameraFlechaY =
-        null;
-
-
-    const canvas =
-        document.getElementById(
-            "cameraArrowCanvas"
-        );
-
-
-    if(canvas){
-
-        const ctx =
-            canvas.getContext("2d");
-
-
-        ctx.clearRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-
-
-        canvas.style.display =
-            "none";
-
-    }
-
-
-    const boton =
-        document.getElementById(
-            "cameraMarkButton"
-        );
-
-
-    if(boton){
-
-        boton.style.display =
-            "inline-block";
-
-    }
-
-
-    const cancelar =
-        document.getElementById(
-            "cameraCancelMarkButton"
-        );
-
-
-    if(cancelar){
-
-        cancelar.style.display =
-            "none";
-
-    }
-
-
-    mostrarEstadoCamara(
-        "Señal cancelada."
-    );
-
-}
-
-
-/*====================================================
- SELECCIONAR PUNTO FLECHA
-====================================================*/
-
-function seleccionarPuntoFlecha(event){
-
-    if(!cameraSenalarActivo){
-
-        return;
-
-    }
-
-
-    const canvas =
-        document.getElementById(
-            "cameraArrowCanvas"
-        );
-
-
-    if(!canvas){
-
-        return;
-
-    }
-
-
-    const rect =
-        canvas.getBoundingClientRect();
-
-
-    const x =
-        (
-            event.clientX -
-            rect.left
-        ) *
-        (
-            canvas.width /
-            rect.width
-        );
-
-
-    const y =
-        (
-            event.clientY -
-            rect.top
-        ) *
-        (
-            canvas.height /
-            rect.height
-        );
-
-
-    colocarFlechaCamara(
-        x,
-        y
-    );
-
-}
-
-
-/*====================================================
- COLOCAR FLECHA
-====================================================*/
-
-function colocarFlechaCamara(
-    x,
-    y
-){
-
-    const video =
-        document.getElementById(
-            "cameraVideo"
-        );
-
-
-    if(!video){
-
-        return;
-
-    }
-
-
-    const width =
-        video.videoWidth;
-
-
-    const height =
-        video.videoHeight;
-
-
-    if(!width || !height){
-
-        return;
-
-    }
-
-
-    const scale =
-        Math.max(
-            width,
-            height
-        ) / 1200;
-
-
-    const padding =
-        Math.round(
-            24 * scale
-        );
-
-
-    const lineHeight =
-        Math.round(
-            30 * scale
-        );
-
-
-    const boxHeight =
-        Math.round(
-            (
-                7 *
-                lineHeight
-            ) +
-            padding * 2
-        );
-
-
-    const stampTop =
-        height -
-        boxHeight -
-        padding;
-
-
-    const margen =
-        Math.round(
-            25 * scale
-        );
-
-
-    const maxY =
-        stampTop -
-        margen;
-
-
-    if(y > maxY){
-
-        y =
-            maxY;
-
-
-        mostrarEstadoCamara(
-
-            "⚠️ Esa zona está reservada para el estampado.<br>" +
-
-            "La flecha fue colocada justo arriba."
-
-        );
-
-    }
-
 <!DOCTYPE html>
 <html>
 
@@ -2029,41 +13,46 @@ function colocarFlechaCamara(
 
 <style>
 
-* {
-  box-sizing: border-box;
+*{
+  box-sizing:border-box;
 }
 
 html,
-body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-  color: #fff;
-  font-family: Arial, sans-serif;
-  overflow: hidden;
+body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  background:#000;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  overflow:hidden;
 }
 
 
 /*====================================================
- CONTENEDOR PRINCIPAL
+ CONTENEDOR
 ====================================================*/
 
-#cameraContainer {
+#cameraContainer{
 
-  width: 100%;
-  max-width: 800px;
+  width:100%;
 
-  height: 100dvh;
+  max-width:800px;
 
-  margin: 0 auto;
+  height:100vh;
 
-  position: relative;
+  margin:auto;
 
-  background: #000;
+  position:relative;
 
-  overflow: hidden;
+  background:#000;
+
+  overflow:hidden;
+
 }
 
 
@@ -2071,21 +60,18 @@ body {
  VIDEO
 ====================================================*/
 
-#video {
+#video{
 
-  position: absolute;
+  width:100%;
 
-  left: 0;
-  top: 0;
+  height:100%;
 
-  width: 100%;
-  height: 100%;
+  display:block;
 
-  display: block;
+  background:#000;
 
-  background: #000;
+  object-fit:cover;
 
-  object-fit: cover;
 }
 
 
@@ -2093,171 +79,331 @@ body {
  CANVAS OCULTO
 ====================================================*/
 
-#canvas {
-  display: none;
+#canvas{
+
+  display:none;
+
 }
 
 
-/*====================================================
+/*==================================================
  VISOR DE SEÑALAMIENTO
-====================================================*/
+==================================================*/
 
 #arrowEditor {
 
-  display: none;
+  display:none;
 
-  position: absolute;
+  position:absolute;
 
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  left:0;
+  top:0;
+  right:0;
+  bottom:0;
 
-  background: #000;
+  background:#000;
 
-  z-index: 5;
+  z-index:5;
 
-  overflow: hidden;
+  overflow:hidden;
 }
 
 
 #arrowCanvas {
 
-  width: 100%;
-  height: 100%;
+  width:100%;
+  height:100%;
 
-  display: block;
+  display:block;
 
-  background: #000;
+  background:#000;
 
-  cursor: crosshair;
+  cursor:crosshair;
 
-  touch-action: none;
+  touch-action:none;
+
 }
 
 
-/*====================================================
- CONTROLES
-====================================================*/
+/*==================================================
+ CONTROLES SIEMPRE ENCIMA DEL VISOR
+==================================================*/
 
 #cameraControls {
 
-  position: absolute;
+  position:absolute;
 
-  left: 0;
-  right: 0;
-  bottom: 0;
+  left:0;
+  right:0;
 
-  min-height: 76px;
+  bottom:0;
 
-  display: flex;
+  display:flex;
 
-  align-items: center;
-  justify-content: center;
+  align-items:center;
+  justify-content:center;
 
-  gap: 8px;
+  gap:6px;
 
-  padding:
-    10px
-    8px
+  padding:8px;
+
+  padding-bottom:
     calc(
-      10px +
+      8px +
       env(safe-area-inset-bottom)
     );
 
   background:
     linear-gradient(
-      transparent 0%,
-      rgba(0,0,0,.80) 35%,
-      rgba(0,0,0,.95) 100%
+      transparent,
+      rgba(0,0,0,.90)
     );
 
-  z-index: 100;
+  z-index:100;
+
 }
 
 
-/*====================================================
- BOTONES
-====================================================*/
+/* BOTONES MÁS PEQUEÑOS */
 
 #cameraControls button {
 
-  flex: 0 1 auto;
+  flex:0 1 auto;
 
-  min-width: 72px;
+  width:auto;
 
-  min-height: 48px;
+  min-width:0;
+
+  min-height:42px;
 
   padding:
-    10px 12px;
+    8px 10px;
 
-  font-size: 13px;
+  font-size:12px;
 
-  font-weight: bold;
+  font-weight:bold;
 
-  border: none;
+  border:none;
 
-  border-radius: 8px;
+  border-radius:7px;
 
-  cursor: pointer;
+  cursor:pointer;
 
-  white-space: nowrap;
+  white-space:nowrap;
 
-  -webkit-tap-highlight-color: transparent;
+}
 
-  touch-action: manipulation;
+
+/* COLORES */
+
+#startButton {
+  background:#2196f3;
+  color:white;
+}
+
+#takeButton {
+  background:#4caf50;
+  color:white;
+}
+
+#signalButton {
+  background:#ff9800;
+  color:white;
+}
+
+#signalButton.active {
+  background:#e65100;
+}
+
+#confirmButton {
+  background:#4caf50;
+  color:white;
+}
+
+#cancelSignalButton {
+  background:#f44336;
+  color:white;
+}
+
+#cancelButton {
+  background:#f44336;
+  color:white;
 }
 
 
 #cameraControls button:disabled {
-  opacity: .4;
+  opacity:.4;
 }
 
 
-/*====================================================
- COLORES
-====================================================*/
+/*==================================================
+ CELULAR
+==================================================*/
 
-#startButton {
-  background: #2196f3;
-  color: #fff;
+@media(max-width:600px){
+
+  body {
+    padding:0;
+    background:#000;
+  }
+
+
+  #cameraContainer {
+
+    width:100vw;
+    height:100vh;
+
+    max-width:none;
+
+    border-radius:0;
+  }
+
+
+  #video {
+
+    width:100vw;
+    height:100vh;
+
+    object-fit:cover;
+  }
+
+
+  #arrowEditor {
+
+    width:100%;
+    height:100%;
+
+    position:absolute;
+
+    left:0;
+    top:0;
+    right:0;
+    bottom:0;
+  }
+
+
+  #arrowCanvas {
+
+    width:100%;
+    height:100%;
+
+    object-fit:contain;
+
+    touch-action:none;
+  }
+
+
+  #cameraControls {
+
+    left:0;
+    right:0;
+    bottom:0;
+
+    z-index:100;
+
+    padding:
+      7px
+      6px
+      calc(
+        7px +
+        env(safe-area-inset-bottom)
+      );
+
+    gap:5px;
+
+    justify-content:center;
+  }
+
+
+  #cameraControls button {
+
+    min-height:38px;
+
+    padding:
+      6px 8px;
+
+    font-size:11px;
+
+    border-radius:6px;
+  }
+
 }
 
-#takeButton {
-  background: #4caf50;
-  color: #fff;
+
+
+#startButton{
+
+  background:#2196f3;
+
+  color:#fff;
+
 }
 
-#signalButton {
-  background: #ff9800;
-  color: #fff;
+
+#takeButton{
+
+  background:#4caf50;
+
+  color:#fff;
+
 }
 
-#signalButton.active {
-  background: #e65100;
+
+#signalButton{
+
+  background:#ff9800;
+
+  color:#fff;
+
+}
+
+
+#signalButton.active{
+
+  background:#e65100;
 
   box-shadow:
     0 0 0 3px
     rgba(255,152,0,.35);
+
 }
 
-#confirmButton {
-  background: #4caf50;
-  color: #fff;
 
-  display: none;
+#confirmButton{
+
+  background:#4caf50;
+
+  color:#fff;
+
+  display:none;
+
 }
 
-#cancelSignalButton {
-  background: #f44336;
-  color: #fff;
 
-  display: none;
+#cancelSignalButton{
+
+  background:#f44336;
+
+  color:#fff;
+
+  display:none;
+
 }
 
-#cancelButton {
-  background: #f44336;
-  color: #fff;
+
+#cancelButton{
+
+  background:#f44336;
+
+  color:#fff;
+
+}
+
+
+#cameraControls button:disabled{
+
+  opacity:.4;
+
 }
 
 
@@ -2265,15 +411,16 @@ body {
  PREVIEW
 ====================================================*/
 
-#preview {
+#preview{
 
-  width: 100%;
+  width:100%;
 
-  max-width: 800px;
+  max-width:800px;
 
-  display: none;
+  display:none;
 
-  margin: auto;
+  margin:auto;
+
 }
 
 
@@ -2281,110 +428,85 @@ body {
  STATUS
 ====================================================*/
 
-#status {
-  display: none;
-}
+#status{
 
-
-/*====================================================
- CELULARES
-====================================================*/
-
-@media (max-width: 600px) {
-
-  #cameraContainer {
-
-    width: 100vw;
-
-    height: 100dvh;
-
-    max-width: none;
-  }
-
-
-  #video {
-
-    width: 100vw;
-    height: 100%;
-
-    object-fit: cover;
-  }
-
-
-  #arrowEditor {
-
-    width: 100%;
-    height: 100%;
-  }
-
-
-  #arrowCanvas {
-
-    width: 100%;
-    height: 100%;
-
-    touch-action: none;
-  }
-
-
-  #cameraControls {
-
-    min-height: 82px;
-
-    gap: 6px;
-
-    padding:
-      8px
-      6px
-      calc(
-        8px +
-        env(safe-area-inset-bottom)
-      );
-  }
-
-
-  #cameraControls button {
-
-    min-width: 70px;
-
-    min-height: 50px;
-
-    padding:
-      9px 10px;
-
-    font-size: 12px;
-
-    border-radius: 8px;
-  }
+  display:none;
 
 }
 
 
 /*====================================================
- CELULARES MUY PEQUEÑOS
+ CELULAR
 ====================================================*/
 
-@media (max-width: 380px) {
+@media(max-width:600px){
 
-  #cameraControls {
+  #cameraContainer{
 
-    gap: 4px;
+    width:100vw;
 
-    padding-left: 4px;
-    padding-right: 4px;
+    height:100vh;
+
+    max-width:none;
+
   }
 
 
-  #cameraControls button {
+  #video{
 
-    min-width: 0;
+    width:100vw;
 
-    min-height: 48px;
+    height:100vh;
+
+    object-fit:cover;
+
+  }
+
+
+  #arrowEditor{
+
+    width:100vw;
+
+    height:100vh;
+
+  }
+
+
+  #arrowCanvas{
+
+    width:100vw;
+
+    height:100vh;
+
+  }
+
+
+  #cameraControls {
+
+  bottom:50px;
+
+  padding:8px;
+
+  gap:6px;
+
+}
+
+
+
+  #cameraControls button{
+
+    min-height:38px;
 
     padding:
-      8px 7px;
 
-    font-size: 11px;
+      7px
+
+      7px;
+
+    font-size:11px;
+
+    border-radius:6px;
+
   }
 
 }
@@ -2507,6 +629,12 @@ const rama =
  LOGO
 ====================================================*/
 
+/*
+ * GOOGLE DRIVE
+ *
+ * Este es el archivo que proporcionaste.
+ */
+
 const LOGO_DRIVE_ID =
   "12EpwDn_A9mR0DfZSiGoTi2NS9zFNYPVP";
 
@@ -2515,6 +643,12 @@ const LOGO_URL =
   "https://lh3.googleusercontent.com/d/" +
   LOGO_DRIVE_ID;
 
+
+/*
+ * Si Google cambia el formato del enlace,
+ * esta función intenta cargarlo también
+ * mediante el enlace uc.
+ */
 
 const LOGO_URL_ALTERNATIVO =
   "https://drive.google.com/uc?export=view&id=" +
@@ -2585,19 +719,59 @@ const arrowCanvas =
 
 let stream = null;
 
+
+/*
+ * Modo señalar
+ */
+
 let modoSenalar = false;
+
+
+/*
+ * Foto base
+ */
 
 let fotoBase = null;
 
+
+/*
+ * GPS
+ */
+
 let gpsActual = null;
+
+
+/*
+ * Fecha de fotografía
+ */
 
 let fechaFoto = null;
 
+
+/*
+ * Imagen del logo
+ */
+
 let logoImagen = null;
+
+
+/*
+ * Indica si el logo está listo
+ */
 
 let logoListo = false;
 
+
+/*
+ * Zona bloqueada del logo
+ */
+
 let zonaLogo = null;
+
+
+/*
+ * Zona bloqueada del estampado
+ */
 
 let zonaEstampado = null;
 
@@ -2610,13 +784,38 @@ let flechaX = null;
 
 let flechaY = null;
 
+
+/*
+ * Ángulo en radianes
+ */
+
 let flechaAngulo = 0;
+
+
+/*
+ * Tamaño
+ */
 
 let flechaEscala = 1;
 
+
+/*
+ * Estado de toque
+ */
+
 let gestoActivo = false;
 
+
+/*
+ * Datos del gesto
+ */
+
 let toqueInicial = null;
+
+
+/*
+ * Para distinguir click de touch
+ */
 
 let ultimoToque = 0;
 
@@ -2697,6 +896,10 @@ async function iniciarCamara(){
       false;
 
 
+    /*
+     * Cargar logo inmediatamente
+     */
+
     cargarLogo();
 
 
@@ -2747,6 +950,10 @@ function cargarLogo(){
     new Image();
 
 
+  /*
+   * Permitir cargar imagen externa
+   */
+
   logoImagen.crossOrigin =
     "anonymous";
 
@@ -2778,6 +985,10 @@ function cargarLogo(){
         "No se pudo cargar logo principal."
       );
 
+
+      /*
+       * Segundo intento
+       */
 
       const alternativa =
         new Image();
@@ -2931,6 +1142,10 @@ async function tomarFoto(){
     }
 
 
+    /*
+     * GPS
+     */
+
     status.textContent =
       "Obteniendo ubicación GPS...";
 
@@ -2942,6 +1157,10 @@ async function tomarFoto(){
     gpsActual =
       posicion;
 
+
+    /*
+     * Canvas
+     */
 
     canvas.width =
       width;
@@ -2964,6 +1183,10 @@ async function tomarFoto(){
     );
 
 
+    /*
+     * Fecha
+     */
+
     const ahora =
       new Date();
 
@@ -2983,6 +1206,10 @@ async function tomarFoto(){
         "es-MX"
       );
 
+
+    /*
+     * Escala
+     */
 
     const escala =
       Math.max(
@@ -3011,6 +1238,10 @@ async function tomarFoto(){
         27 * escala
       );
 
+
+    /*
+     * Texto
+     */
 
     const lineas = [
 
@@ -3050,6 +1281,10 @@ async function tomarFoto(){
 
     ];
 
+
+    /*
+     * Medir estampado
+     */
 
     ctx.font =
       "bold " +
@@ -3105,6 +1340,13 @@ async function tomarFoto(){
       padding;
 
 
+    /*
+     * Guardar zona del estampado
+     *
+     * Se agrega margen para que la flecha
+     * tampoco pueda rozarlo.
+     */
+
     const margenEstampado =
       Math.max(
         15,
@@ -3135,6 +1377,10 @@ async function tomarFoto(){
     };
 
 
+    /*
+     * Caja negra
+     */
+
     ctx.fillStyle =
       "rgba(0,0,0,.42)";
 
@@ -3159,6 +1405,10 @@ async function tomarFoto(){
 
     ctx.fill();
 
+
+    /*
+     * Texto
+     */
 
     ctx.fillStyle =
       "rgba(255,255,255,.95)";
@@ -3194,6 +1444,14 @@ async function tomarFoto(){
     );
 
 
+    /*
+     * LOGO
+     *
+     * IMPORTANTE:
+     * se dibuja aquí ANTES de crear
+     * fotoBase.
+     */
+
     dibujarLogoEnCanvas(
       ctx,
       width,
@@ -3201,12 +1459,21 @@ async function tomarFoto(){
     );
 
 
+    /*
+     * Guardar foto base
+     */
+
     fotoBase =
       canvas.toDataURL(
         "image/jpeg",
         0.90
       );
 
+
+    /*
+     * Si no se señaló,
+     * guardar inmediatamente.
+     */
 
     if(!modoSenalar){
 
@@ -3220,6 +1487,10 @@ async function tomarFoto(){
 
     }
 
+
+    /*
+     * Abrir visor
+     */
 
     abrirVisorFlecha();
 
@@ -3251,6 +1522,10 @@ function dibujarLogoEnCanvas(
   height
 ){
 
+  /*
+   * Si no cargó, no dibujamos.
+   */
+
   if(
     !logoListo ||
     !logoImagen
@@ -3263,6 +1538,12 @@ function dibujarLogoEnCanvas(
 
   }
 
+
+  /*
+   * Tamaño máximo del logo.
+   *
+   * Se calcula respecto a la foto.
+   */
 
   const maxWidth =
     width * 0.18;
@@ -3294,6 +1575,10 @@ function dibujarLogoEnCanvas(
     proporcion;
 
 
+  /*
+   * Margen
+   */
+
   const margen =
     Math.max(
       20,
@@ -3302,6 +1587,10 @@ function dibujarLogoEnCanvas(
       )
     );
 
+
+  /*
+   * ESQUINA SUPERIOR DERECHA
+   */
 
   const logoX =
     width -
@@ -3312,6 +1601,12 @@ function dibujarLogoEnCanvas(
   const logoY =
     margen;
 
+
+  /*
+   * Zona bloqueada.
+   *
+   * Agregamos margen adicional.
+   */
 
   const bloqueo =
     Math.max(
@@ -3343,6 +1638,12 @@ function dibujarLogoEnCanvas(
   };
 
 
+  /*
+   * Fondo semitransparente
+   * opcional para que el logo
+   * se vea mejor.
+   */
+
   ctx.save();
 
 
@@ -3366,6 +1667,10 @@ function dibujarLogoEnCanvas(
 
   );
 
+
+  /*
+   * Logo
+   */
 
   ctx.drawImage(
 
@@ -3438,33 +1743,32 @@ function abrirVisorFlecha(){
       );
 
 
-      arrowEditor.style.display =
-        "block";
+arrowEditor.style.display =
+  "block";
+
+video.style.display =
+  "none";
+
+signalButton.style.display =
+  "none";
+
+takeButton.style.display =
+  "none";
+
+confirmButton.style.display =
+  "block";
+
+cancelSignalButton.style.display =
+  "block";
+
+cancelButton.style.display =
+  "none";
 
 
-      video.style.display =
-        "none";
 
-
-      signalButton.style.display =
-        "none";
-
-
-      takeButton.style.display =
-        "none";
-
-
-      confirmButton.style.display =
-        "block";
-
-
-      cancelSignalButton.style.display =
-        "block";
-
-
-      cancelButton.style.display =
-        "none";
-
+      /*
+       * Reiniciar flecha
+       */
 
       flechaX =
         null;
@@ -3487,12 +1791,12 @@ function abrirVisorFlecha(){
 
 
       status.textContent =
-        "🎯 TOCA LA FOTO PARA COLOCAR LA FLECHA.\n\n" +
+        "🎯 TOCA LA FOTO PARA COLOCAR LA FLECHA.PP\n\n" +
 
         "Puedes moverla con un dedo y " +
-        "girarla o cambiar su tamaño con dos dedos.\n\n" +
+        "girarla o cambiar su tamaño con dos dedosETA.\n\n" +
 
-        "🚫 El estampado y el logo están bloqueados.";
+        "🚫 El estampado y el logo están bloqueadosPP.";
 
     };
 
@@ -3571,6 +1875,10 @@ arrowCanvas.addEventListener(
       );
 
 
+    /*
+     * Primera colocación
+     */
+
     if(
       flechaX === null ||
       flechaY === null
@@ -3637,6 +1945,10 @@ arrowCanvas.addEventListener(
       event.touches;
 
 
+    /*
+     * Un dedo
+     */
+
     if(
       touches.length === 1
     ){
@@ -3646,6 +1958,11 @@ arrowCanvas.addEventListener(
           touches[0]
         );
 
+
+      /*
+       * Si todavía no existe,
+       * colocar flecha.
+       */
 
       if(
         flechaX === null
@@ -3715,6 +2032,10 @@ arrowCanvas.addEventListener(
 
     }
 
+
+    /*
+     * Dos dedos
+     */
 
     else if(
       touches.length === 2 &&
@@ -3840,6 +2161,10 @@ arrowCanvas.addEventListener(
       event.touches;
 
 
+    /*
+     * MOVER CON UN DEDO
+     */
+
     if(
       touches.length === 1 &&
       toqueInicial.tipo === "move"
@@ -3871,6 +2196,11 @@ arrowCanvas.addEventListener(
         dy;
 
 
+      /*
+       * No permitir entrar
+       * en logo/estampado.
+       */
+
       if(
         !flechaChocaConZonas(
           nuevoX,
@@ -3894,6 +2224,10 @@ arrowCanvas.addEventListener(
 
     }
 
+
+    /*
+     * GIRAR + ESCALAR CON DOS DEDOS
+     */
 
     else if(
       touches.length === 2 &&
@@ -3951,6 +2285,10 @@ arrowCanvas.addEventListener(
         );
 
 
+      /*
+       * Escala
+       */
+
       let nuevaEscala =
         toqueInicial.escala *
         (
@@ -3958,6 +2296,10 @@ arrowCanvas.addEventListener(
           toqueInicial.distancia
         );
 
+
+      /*
+       * Limites de tamaño
+       */
 
       nuevaEscala =
         Math.max(
@@ -3969,6 +2311,10 @@ arrowCanvas.addEventListener(
         );
 
 
+      /*
+       * Rotación
+       */
+
       const nuevaRotacion =
         toqueInicial.rotacion +
         (
@@ -3976,6 +2322,10 @@ arrowCanvas.addEventListener(
           toqueInicial.angulo
         );
 
+
+      /*
+       * Comprobar toda la flecha.
+       */
 
       if(
         !flechaChocaConZonas(
@@ -4042,12 +2392,25 @@ arrowCanvas.addEventListener(
  COMPROBAR ZONAS PROHIBIDAS
 ====================================================*/
 
+/*
+ * Esta es la parte importante.
+ *
+ * No comprobamos solamente la punta.
+ *
+ * Comprobamos varios puntos alrededor
+ * de TODA la flecha.
+ */
+
 function flechaChocaConZonas(
   x,
   y,
   angulo,
   escala
 ){
+
+  /*
+   * Dimensiones base
+   */
 
   const factor =
     Math.max(
@@ -4071,6 +2434,11 @@ function flechaChocaConZonas(
     );
 
 
+  /*
+   * La flecha va desde
+   * un punto inicial hasta la punta.
+   */
+
   const inicioX =
     x -
     longitud *
@@ -4088,6 +2456,11 @@ function flechaChocaConZonas(
       Math.PI / 4
     );
 
+
+  /*
+   * Revisar muchos puntos
+   * a lo largo del cuerpo.
+   */
 
   const pasos =
     18;
@@ -4120,6 +2493,11 @@ function flechaChocaConZonas(
       ) *
       t;
 
+
+    /*
+     * Revisar alrededor
+     * del cuerpo.
+     */
 
     const margen =
       grosor *
@@ -4190,6 +2568,10 @@ function flechaChocaConZonas(
   }
 
 
+  /*
+   * Revisar también la cabeza
+   */
+
   const punta =
     32 *
     factor *
@@ -4199,28 +2581,52 @@ function flechaChocaConZonas(
   const cabezaPuntos = [
 
     {
-      x:x,
-      y:y
+      x:
+        x,
+
+      y:
+        y
+
     },
 
     {
-      x:x + punta,
-      y:y
+      x:
+        x +
+        punta,
+
+      y:
+        y
+
     },
 
     {
-      x:x - punta,
-      y:y
+      x:
+        x -
+        punta,
+
+      y:
+        y
+
     },
 
     {
-      x:x,
-      y:y + punta
+      x:
+        x,
+
+      y:
+        y +
+        punta
+
     },
 
     {
-      x:x,
-      y:y - punta
+      x:
+        x,
+
+      y:
+        y -
+        punta
+
     }
 
   ];
@@ -4389,6 +2795,10 @@ function dibujarFlecha(){
         );
 
 
+      /*
+       * BORDE NEGRO
+       */
+
       ctx.beginPath();
 
 
@@ -4424,6 +2834,10 @@ function dibujarFlecha(){
       ctx.stroke();
 
 
+      /*
+       * FLECHA VERDE
+       */
+
       ctx.beginPath();
 
 
@@ -4458,6 +2872,10 @@ function dibujarFlecha(){
 
       ctx.stroke();
 
+
+      /*
+       * CABEZA
+       */
 
       const angulo =
         Math.atan2(
@@ -4530,6 +2948,10 @@ function dibujarFlecha(){
 
       ctx.fill();
 
+
+      /*
+       * BORDE DE LA CABEZA
+       */
 
       ctx.strokeStyle =
         "#000000";
@@ -4658,6 +3080,13 @@ confirmButton.addEventListener(
 
     }
 
+
+    /*
+     * Comprobación final.
+     *
+     * Por seguridad volvemos a revisar
+     * antes de guardar.
+     */
 
     if(
       flechaChocaConZonas(
@@ -5084,6 +3513,10 @@ window.addEventListener(
     signalButton.style.display =
       "block";
 
+
+    /*
+     * Intentar cargar logo desde el principio
+     */
 
     cargarLogo();
 
