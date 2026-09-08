@@ -829,24 +829,6 @@ async function iniciarCamara(){
 
 
         /*===============================================
-         GPS + CÁMARA
-        ===============================================*/
-
-        if(!cameraStream){
-
-    takeButton.disabled =
-        true;
-
-    mostrarEstadoCamara(
-        "Esperando cámara..."
-    );
-
-    return;
-
-}
-
-
-        /*===============================================
          CONFIGURAR CANVAS
         ===============================================*/
 
@@ -919,7 +901,6 @@ async function iniciarCamara(){
                 "📐 ACTIVANDO PLOMADO POSTE"
             );
 
-
             activarModoPlomado();
 
         }
@@ -931,7 +912,6 @@ async function iniciarCamara(){
             console.log(
                 "📏 ACTIVANDO MEDIR POSTE"
             );
-
 
             activarModoMedir();
 
@@ -954,6 +934,10 @@ async function iniciarCamara(){
 
         actualizarEstadoCompleto();
 
+
+        /*===============================================
+         MENSAJE FINAL
+        ===============================================*/
 
         if(
             cameraModo ===
@@ -1008,6 +992,23 @@ async function iniciarCamara(){
             "❌ ERROR CAMERA:",
             error
         );
+
+
+        /*===============================================
+         DETENER STREAM SI FALLÓ
+        ===============================================*/
+
+        if(cameraStream){
+
+            cameraStream
+                .getTracks()
+                .forEach(function(track){
+
+                    track.stop();
+
+                });
+
+        }
 
 
         cameraStream =
