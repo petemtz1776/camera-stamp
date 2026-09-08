@@ -832,7 +832,18 @@ async function iniciarCamara(){
          GPS + CÁMARA
         ===============================================*/
 
-        actualizarEstadoCompleto();
+        if(!cameraStream){
+
+    takeButton.disabled =
+        true;
+
+    mostrarEstadoCamara(
+        "Esperando cámara..."
+    );
+
+    return;
+
+}
 
 
         /*===============================================
