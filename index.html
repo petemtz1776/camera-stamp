@@ -683,182 +683,373 @@ let ultimoToque = 0;
  INICIAR CÁMARA
 ====================================================*/
 
-startButton.addEventListener(
-  "click",
-  iniciarCamara
-);
-
-
 async function iniciarCamara(){
 
-  try{
+    try{
 
-    status.textContent =
-      "Solicitando permiso de cámara...";
+        console.log(
+            "🎥 INICIANDO CÁMARA..."
+        );
 
 
-    if(
-      !navigator.mediaDevices ||
-      !navigator.mediaDevices.getUserMedia
-    ){
+        /*===============================================
+         ELEMENTOS
+        ===============================================*/
 
-      throw new Error(
-        "El navegador no permite utilizar la cámara."
-      );
+        const video =
+            document.getElementById(
+                "cameraVideo"
+            );
+
+
+        const takeButton =
+            document.getElementById(
+                "cameraTakeButton"
+            );
+
+
+        if(!video){
+
+            throw new Error(
+                "No se encontró cameraVideo."
+            );
+
+        }
+
+
+        if(!takeButton){
+
+            throw new Error(
+                "No se encontró cameraTakeButton."
+            );
+
+        }
+
+
+        /*===============================================
+         ESTADO
+        ===============================================*/
+
+        mostrarEstadoCamara(
+            "Solicitando permiso de cámara..."
+        );
+
+
+        takeButton.disabled =
+            true;
+
+
+        /*===============================================
+         VERIFICAR SOPORTE
+        ===============================================*/
+
+        if(
+            !navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia
+        ){
+
+            throw new Error(
+                "El navegador no permite utilizar la cámara."
+            );
+
+        }
+
+
+        /*===============================================
+         DETENER CÁMARA ANTERIOR
+        ===============================================*/
+
+        detenerCamara();
+
+
+        /*===============================================
+         SOLICITAR CÁMARA
+        ===============================================*/
+
+        cameraStream =
+            await navigator.mediaDevices.getUserMedia({
+
+                video:{
+
+                    facingMode:{
+                        ideal:"environment"
+                    },
+
+                    width:{
+                        ideal:1920
+                    },
+
+                    height:{
+                        ideal:1080
+                    }
+
+                },
+
+                audio:false
+
+            });
+
+
+        /*===============================================
+         CONECTAR STREAM AL VIDEO
+        ===============================================*/
+
+        video.srcObject =
+            cameraStream;
+
+
+        await video.play();
+
+
+        console.log(
+            "✅ CÁMARA ACTIVA"
+        );
+
+
+        console.log(
+            "RESOLUCIÓN:",
+            video.videoWidth,
+            "x",
+            video.videoHeight
+        );
+
+
+        /*===============================================
+         CARGAR LOGO
+        ===============================================*/
+
+        if(
+            typeof cargarLogo ===
+            "function"
+        ){
+
+            cargarLogo();
+
+        }
+
+
+        /*===============================================
+         GPS + CÁMARA
+        ===============================================*/
+
+        actualizarEstadoCompleto();
+
+
+        /*===============================================
+         CONFIGURAR CANVAS
+        ===============================================*/
+
+        const arrowCanvas =
+            document.getElementById(
+                "cameraArrowCanvas"
+            );
+
+
+        if(arrowCanvas){
+
+            arrowCanvas.width =
+                video.videoWidth ||
+                1280;
+
+            arrowCanvas.height =
+                video.videoHeight ||
+                720;
+
+        }
+
+
+        const posteCanvas =
+            document.getElementById(
+                "postePlomadoCanvas"
+            );
+
+
+        if(posteCanvas){
+
+            posteCanvas.width =
+                video.videoWidth ||
+                1280;
+
+            posteCanvas.height =
+                video.videoHeight ||
+                720;
+
+        }
+
+
+        /*===============================================
+         MODO RECIBIDO POR URL
+        ===============================================*/
+
+        console.log(
+            "========================================"
+        );
+
+        console.log(
+            "CAMERA STAMP - MODO:",
+            cameraModo
+        );
+
+        console.log(
+            "========================================"
+        );
+
+
+        /*===============================================
+         ACTIVAR MODO AUTOMÁTICAMENTE
+        ===============================================*/
+
+        if(
+            cameraModo ===
+            "plomado"
+        ){
+
+            console.log(
+                "📐 ACTIVANDO PLOMADO POSTE"
+            );
+
+
+            activarModoPlomado();
+
+        }
+        else if(
+            cameraModo ===
+            "medir"
+        ){
+
+            console.log(
+                "📏 ACTIVANDO MEDIR POSTE"
+            );
+
+
+            activarModoMedir();
+
+        }
+        else{
+
+            console.log(
+                "📷 CÁMARA NORMAL"
+            );
+
+        }
+
+
+        /*===============================================
+         ACTUALIZAR INTERFAZ
+        ===============================================*/
+
+        prepararModoCamara();
+
+
+        actualizarEstadoCompleto();
+
+
+        if(
+            cameraModo ===
+            "plomado"
+        ){
+
+            mostrarEstadoCamara(
+
+                "📐 PLOMADO POSTE ACTIVO.<br><br>" +
+
+                "Seleccione la BASE y después " +
+
+                "la PARTE SUPERIOR del poste."
+
+            );
+
+        }
+        else if(
+            cameraModo ===
+            "medir"
+        ){
+
+            mostrarEstadoCamara(
+
+                "📏 MEDIR POSTE ACTIVO.<br><br>" +
+
+                "Seleccione la BASE y después " +
+
+                "la PARTE SUPERIOR del poste."
+
+            );
+
+        }
+        else{
+
+            mostrarEstadoCamara(
+
+                "✅ CÁMARA LISTA.<br><br>" +
+
+                "Puedes tomar la fotografía " +
+
+                "directamente o activar SEÑALAR."
+
+            );
+
+        }
+
+    }
+    catch(error){
+
+        console.error(
+            "❌ ERROR CAMERA:",
+            error
+        );
+
+
+        cameraStream =
+            null;
+
+
+        const video =
+            document.getElementById(
+                "cameraVideo"
+            );
+
+
+        if(video){
+
+            video.srcObject =
+                null;
+
+        }
+
+
+        const takeButton =
+            document.getElementById(
+                "cameraTakeButton"
+            );
+
+
+        if(takeButton){
+
+            takeButton.disabled =
+                true;
+
+        }
+
+
+        mostrarEstadoCamara(
+
+            "❌ NO FUE POSIBLE ABRIR LA CÁMARA.<br><br>" +
+
+            escaparHTML(
+                error.name || ""
+            ) +
+
+            "<br>" +
+
+            escaparHTML(
+                error.message || ""
+            )
+
+        );
 
     }
 
-
-    detenerCamara();
-
-
-    stream =
-      await navigator.mediaDevices.getUserMedia({
-
-        video:{
-
-          facingMode:{
-            ideal:"environment"
-          },
-
-          width:{
-            ideal:1920
-          },
-
-          height:{
-            ideal:1080
-          }
-
-        },
-
-        audio:false
-
-      });
-
-
-    video.srcObject =
-      stream;
-
-
-    await video.play();
-
-
-    startButton.style.display =
-      "none";
-
-
-    signalButton.style.display =
-      "block";
-
-
-    takeButton.disabled =
-      false;
-
-
-    cargarLogo();
-
-
-    /*===============================================
-     VERIFICAR MODO RECIBIDO
-    ===============================================*/
-
-    console.log(
-      "========================================"
-    );
-
-    console.log(
-      "CAMERA STAMP - MODO RECIBIDO:",
-      modo
-    );
-
-    console.log(
-      "========================================"
-    );
-
-
-    /*===============================================
-     ACTIVAR MODO AUTOMÁTICAMENTE
-    ===============================================*/
-
-    if(modo === "plomado"){
-
-      console.log(
-        "📐 ACTIVANDO PLOMADO POSTE"
-      );
-
-      activarModoPlomado();
-
-    }
-    else if(modo === "medir"){
-
-      console.log(
-        "📏 ACTIVANDO MEDIR POSTE"
-      );
-
-      activarModoMedir();
-
-    }
-    else{
-
-      console.log(
-        "📷 CÁMARA NORMAL"
-      );
-
-    }
-
-
-    /*===============================================
-     ESTADO
-    ===============================================*/
-
-    if(modo === "plomado"){
-
-      status.textContent =
-        "📐 PLOMADO POSTE ACTIVO.\n\n" +
-        "Seleccione la BASE y después la PARTE SUPERIOR.";
-
-    }
-    else if(modo === "medir"){
-
-      status.textContent =
-        "📏 MEDIR POSTE ACTIVO.\n\n" +
-        "Seleccione la BASE y después la PARTE SUPERIOR.";
-
-    }
-    else{
-
-      status.textContent =
-        "✅ CÁMARA LISTA.\n\n" +
-        "Puedes tomar la foto directamente " +
-        "o activar SEÑALAR.";
-
-    }
-
-  }
-  catch(error){
-
-    console.error(
-      "ERROR CAMERA:",
-      error
-    );
-
-
-    status.textContent =
-      "NO FUE POSIBLE ABRIR LA CÁMARA.\n\n" +
-      error.name +
-      "\n" +
-      error.message;
-
-
-    startButton.style.display =
-      "block";
-
-
-    takeButton.disabled =
-      true;
-
-  }
-
+}
 }
 /*====================================================
  CARGAR LOGO
